@@ -316,9 +316,10 @@ class LibrarySettingsSheet(
             private val compactGrid = Item.Radio(R.string.action_display_grid, this)
             private val comfortableGrid = Item.Radio(R.string.action_display_comfortable_grid, this)
             private val list = Item.Radio(R.string.action_display_list, this)
+            private val noTitleGrid = Item.Radio(R.string.action_display_no_title_grid, this)
 
             override val header = Item.Header(R.string.action_display_mode)
-            override val items = listOf(compactGrid, comfortableGrid, list)
+            override val items = listOf(compactGrid, comfortableGrid, list, noTitleGrid)
             override val footer = null
 
             override fun initModels() {
@@ -343,6 +344,7 @@ class LibrarySettingsSheet(
                 compactGrid.checked = mode == DisplayModeSetting.COMPACT_GRID
                 comfortableGrid.checked = mode == DisplayModeSetting.COMFORTABLE_GRID
                 list.checked = mode == DisplayModeSetting.LIST
+                noTitleGrid.checked = mode == DisplayModeSetting.NO_TITLE_GRID
             }
 
             private fun setDisplayModePreference(item: Item) {
@@ -350,6 +352,7 @@ class LibrarySettingsSheet(
                     compactGrid -> DisplayModeSetting.COMPACT_GRID
                     comfortableGrid -> DisplayModeSetting.COMFORTABLE_GRID
                     list -> DisplayModeSetting.LIST
+                    noTitleGrid -> DisplayModeSetting.NO_TITLE_GRID
                     else -> throw NotImplementedError("Unknown display mode")
                 }
 

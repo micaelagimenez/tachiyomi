@@ -222,7 +222,8 @@ open class BrowseSourceController(bundle: Bundle) :
                 (layoutManager as GridLayoutManager).spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
                         return when (adapter?.getItemViewType(position)) {
-                            R.layout.source_compact_grid_item, R.layout.source_comfortable_grid_item, null -> 1
+                            R.layout.source_compact_grid_item, R.layout.source_comfortable_grid_item,
+                            R.layout.source_no_title_grid_item, -> 1
                             else -> spanCount
                         }
                     }
@@ -276,6 +277,7 @@ open class BrowseSourceController(bundle: Bundle) :
             DisplayModeSetting.COMPACT_GRID -> R.id.action_compact_grid
             DisplayModeSetting.COMFORTABLE_GRID -> R.id.action_comfortable_grid
             DisplayModeSetting.LIST -> R.id.action_list
+            DisplayModeSetting.NO_TITLE_GRID -> R.id.action_no_title_grid
         }
         menu.findItem(displayItem).isChecked = true
     }
@@ -299,6 +301,7 @@ open class BrowseSourceController(bundle: Bundle) :
             R.id.action_search -> expandActionViewFromInteraction = true
             R.id.action_compact_grid -> setDisplayMode(DisplayModeSetting.COMPACT_GRID)
             R.id.action_comfortable_grid -> setDisplayMode(DisplayModeSetting.COMFORTABLE_GRID)
+            R.id.action_no_title_grid -> setDisplayMode(DisplayModeSetting.NO_TITLE_GRID)
             R.id.action_list -> setDisplayMode(DisplayModeSetting.LIST)
             R.id.action_open_in_web_view -> openInWebView()
             R.id.action_local_source_help -> openLocalSourceHelpGuide()

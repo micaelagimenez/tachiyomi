@@ -222,6 +222,7 @@
     <string name="action_display">Mostrar</string>
     <string name="action_display_grid">Rejilla compacta</string>
     <string name="action_display_list">Lista</string>
+    <string name="action_display_no_title_grid">Rejilla sin títulos</string>
     <string name="action_share">Compartir</string>
     <string name="action_save">Guardar</string>
     <string name="action_reset">Restablecer</string>
