@@ -52,6 +52,9 @@ class SourceNoTitleGridHolder(private val view: View, private val adapter: Flexi
                 .target(StateImageViewTarget(binding.thumbnail, binding.progress, crossfadeDuration))
                 .build()
             itemView.context.imageLoader.enqueue(request)
+        } else {
+            // Set manga title
+            binding.title.text = manga.title
         }
     }
 }

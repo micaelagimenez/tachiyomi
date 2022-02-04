@@ -31,6 +31,23 @@
                 tools:ignore="ContentDescription"
                 tools:src="@mipmap/ic_launcher" />
 
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:padding="8dp"
+                android:shadowColor="@color/md_black_1000"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="4"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textSize="12sp"
+                android:textColor="@color/md_white_1000"
+                tools:text="Sample name" />
+
             <include
                 android:id="@+id/badges"
                 layout="@layout/source_grid_item_badges" />

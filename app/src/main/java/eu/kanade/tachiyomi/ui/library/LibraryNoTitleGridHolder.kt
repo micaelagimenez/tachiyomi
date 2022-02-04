@@ -50,6 +50,11 @@ class LibraryNoTitleGridHolder(
 
         // Update the cover.
         binding.thumbnail.clear()
-        binding.thumbnail.loadAnyAutoPause(item.manga)
+        if (!item.manga.thumbnail_url.isNullOrEmpty()) {
+            binding.thumbnail.loadAnyAutoPause(item.manga)
+        } else {
+            // Set manga title
+            binding.title.text = item.manga.title
+        }
     }
 }
