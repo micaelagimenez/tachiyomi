@@ -125,6 +125,7 @@
     <string name="action_webview_forward">Forward</string>
     <string name="action_webview_refresh">Refresh</string>
     <string name="action_start_downloading_now">Start downloading now</string>
+    <string name="action_faq_and_guides">FAQ and Guides</string>
 
     <!-- Operations -->
     <string name="loading">Loading…</string>
@@ -371,6 +372,7 @@
     <string name="pref_category_reading">Reading</string>
     <string name="pref_webtoon_side_padding">Side padding</string>
     <string name="webtoon_side_padding_0">None</string>
+    <string name="webtoon_side_padding_5">5%</string>
     <string name="webtoon_side_padding_10">10%</string>
     <string name="webtoon_side_padding_15">15%</string>
     <string name="webtoon_side_padding_20">20%</string>
@@ -424,6 +426,7 @@
     <string name="pref_backup_slots">Maximum backups</string>
     <string name="source_not_found_name">Source not found: %1$s</string>
     <string name="tracker_not_logged_in">Not logged in: %1$s</string>
+    <string name="backup_restore_invalid_uri">Error: empty URI</string>
     <string name="backup_created">Backup created</string>
     <string name="invalid_backup_file">Invalid backup file</string>
     <string name="invalid_backup_file_missing_data">File is missing data.</string>

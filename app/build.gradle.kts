@@ -28,8 +28,8 @@ android {
         applicationId = "eu.kanade.tachiyomi"
         minSdk = AndroidConfig.minSdk
         targetSdk = AndroidConfig.targetSdk
-        versionCode = 72
-        versionName = "0.12.3"
+        versionCode = 74
+        versionName = "0.13.1"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
@@ -121,9 +121,9 @@ android {
     }
 
     lint {
-        disable("MissingTranslation", "ExtraTranslation")
-        isAbortOnError = false
-        isCheckReleaseBuilds = false
+        disable.addAll(listOf("MissingTranslation", "ExtraTranslation"))
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 
     compileOptions {
@@ -148,11 +148,11 @@ dependencies {
 
     // AndroidX libraries
     implementation("androidx.annotation:annotation:1.4.0-alpha01")
-    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("androidx.appcompat:appcompat:1.4.1")
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha04")
     implementation("androidx.browser:browser:1.4.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
-    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0-rc01")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
+    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     implementation("androidx.core:core-ktx:1.8.0-alpha02")
     implementation("androidx.core:core-splashscreen:1.0.0-alpha02")
     implementation("androidx.recyclerview:recyclerview:1.3.0-alpha01")
@@ -208,8 +208,8 @@ dependencies {
     implementation("com.github.requery:sqlite-android:3.36.0")
 
     // Preferences
-    implementation("androidx.preference:preference-ktx:1.2.0-rc01")
-    implementation("com.github.tfcporciuncula.flow-preferences:flow-preferences:1.4.0")
+    implementation("androidx.preference:preference-ktx:1.2.0")
+    implementation("com.fredporciuncula:flow-preferences:1.6.0")
 
     // Model View Presenter
     val nucleusVersion = "3.0.0"
@@ -233,7 +233,7 @@ dependencies {
     implementation("com.github.gpanther:java-nat-sort:natural-comparator-1.1")
 
     // UI libraries
-    implementation("com.google.android.material:material:1.6.0-alpha01")
+    implementation("com.google.android.material:material:1.6.0-alpha02")
     implementation("com.github.dmytrodanylyk.android-process-button:library:1.0.4")
     implementation("com.github.arkon.FlexibleAdapter:flexible-adapter:c8013533")
     implementation("com.github.arkon.FlexibleAdapter:flexible-adapter-ui:c8013533")
