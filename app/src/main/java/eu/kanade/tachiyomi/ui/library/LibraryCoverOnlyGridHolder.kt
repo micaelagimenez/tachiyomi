@@ -6,15 +6,15 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.clear
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
-import eu.kanade.tachiyomi.databinding.SourceNoTitleGridItemBinding
+import eu.kanade.tachiyomi.databinding.SourceCoverOnlyGridItemBinding
 import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
 
-class LibraryNoTitleGridHolder(
-    private val view: View,
+class LibraryCoverOnlyGridHolder(
+    view: View,
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
-) : LibraryHolder<SourceNoTitleGridItemBinding>(view, adapter) {
+) : LibraryHolder<SourceCoverOnlyGridItemBinding>(view, adapter) {
 
-    override val binding = SourceNoTitleGridItemBinding.bind(view)
+    override val binding = SourceCoverOnlyGridItemBinding.bind(view)
 
     /**
      * Method called from [LibraryCategoryAdapter.onBindViewHolder]. It updates the data for this

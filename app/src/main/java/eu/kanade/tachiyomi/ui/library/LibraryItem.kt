@@ -15,7 +15,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
-import eu.kanade.tachiyomi.databinding.SourceNoTitleGridItemBinding
+import eu.kanade.tachiyomi.databinding.SourceCoverOnlyGridItemBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
@@ -49,8 +49,8 @@ class LibraryItem(
         return when (getDisplayMode()) {
             DisplayModeSetting.COMPACT_GRID -> R.layout.source_compact_grid_item
             DisplayModeSetting.COMFORTABLE_GRID -> R.layout.source_comfortable_grid_item
+            DisplayModeSetting.COVER_ONLY_GRID -> R.layout.source_cover_only_grid_item
             DisplayModeSetting.LIST -> R.layout.source_list_item
-            DisplayModeSetting.NO_TITLE_GRID -> R.layout.source_no_title_grid_item
         }
     }
 
@@ -82,11 +82,8 @@ class LibraryItem(
                 }
                 LibraryComfortableGridHolder(view, adapter)
             }
-            DisplayModeSetting.LIST -> {
-                LibraryListHolder(view, adapter)
-            }
-            DisplayModeSetting.NO_TITLE_GRID -> {
-                val binding = SourceNoTitleGridItemBinding.bind(view)
+            DisplayModeSetting.COVER_ONLY_GRID -> {
+                val binding = SourceCoverOnlyGridItemBinding.bind(view)
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
                 view.apply {
@@ -95,7 +92,10 @@ class LibraryItem(
                         coverHeight
                     )
                 }
-                LibraryNoTitleGridHolder(view, adapter)
+                LibraryCoverOnlyGridHolder(view, adapter)
+            }
+            DisplayModeSetting.LIST -> {
+                LibraryListHolder(view, adapter)
             }
         }
     }
