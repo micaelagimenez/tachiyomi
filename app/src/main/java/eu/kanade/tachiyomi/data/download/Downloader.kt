@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
 import android.webkit.MimeTypeMap
-import android.widget.Toast
 import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
@@ -27,7 +26,6 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.async
 import logcat.LogPriority
 import okhttp3.Response
@@ -60,7 +58,7 @@ class Downloader(
     private val context: Context,
     private val provider: DownloadProvider,
     private val cache: DownloadCache,
-    private val sourceManager: SourceManager
+    private val sourceManager: SourceManager,
 ) {
 
     private val chapterCache: ChapterCache by injectLazy()
@@ -211,7 +209,7 @@ class Downloader(
                         downloadChapter(download).subscribeOn(Schedulers.io())
                     }
                 },
-                5
+                5,
             )
             .onBackpressureLatest()
             .observeOn(AndroidSchedulers.mainThread())
@@ -223,7 +221,7 @@ class Downloader(
                     DownloadService.stop(context)
                     logcat(LogPriority.ERROR, error)
                     notifier.onError(error.message)
-                }
+                },
             )
     }
 
@@ -274,13 +272,20 @@ class Downloader(
 
             // Start downloader if needed
             if (autoStart && wasEmpty) {
+                val queuedDownloads = queue.filter { it.source !is UnmeteredSource }.count()
                 val maxDownloadsFromSource = queue
                     .groupBy { it.source }
                     .filterKeys { it !is UnmeteredSource }
                     .maxOf { it.value.size }
-                if (maxDownloadsFromSource > CHAPTERS_PER_SOURCE_QUEUE_WARNING_THRESHOLD) {
+                if (
+                    queuedDownloads > DOWNLOADS_QUEUED_WARNING_THRESHOLD ||
+                    maxDownloadsFromSource > CHAPTERS_PER_SOURCE_QUEUE_WARNING_THRESHOLD
+                ) {
                     withUIContext {
-                        context.toast(R.string.download_queue_size_warning, Toast.LENGTH_LONG)
+                        notifier.onWarning(
+                            context.getString(R.string.download_queue_size_warning),
+                            WARNING_NOTIF_TIMEOUT_MS,
+                        )
                     }
                 }
                 DownloadService.start(context)
@@ -478,7 +483,7 @@ class Downloader(
         download: Download,
         mangaDir: UniFile,
         tmpDir: UniFile,
-        dirname: String
+        dirname: String,
     ) {
         // Ensure that the chapter folder has all the images.
         val downloadedImages = tmpDir.listFiles().orEmpty().filterNot { it.name!!.endsWith(".tmp") }
@@ -559,9 +564,11 @@ class Downloader(
 
     companion object {
         const val TMP_DIR_SUFFIX = "_tmp"
+        const val WARNING_NOTIF_TIMEOUT_MS = 30_000L
         const val CHAPTERS_PER_SOURCE_QUEUE_WARNING_THRESHOLD = 15
+        private const val DOWNLOADS_QUEUED_WARNING_THRESHOLD = 30
     }
 }
 
-// Arbitrary minimum required space to start a download: 50 MB
-private const val MIN_DISK_SPACE = 50 * 1024 * 1024
+// Arbitrary minimum required space to start a download: 200 MB
+private const val MIN_DISK_SPACE = 200L * 1024 * 1024

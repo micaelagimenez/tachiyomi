@@ -34,13 +34,13 @@ class PreferencesHelper(val context: Context) {
     private val defaultDownloadsDir = File(
         Environment.getExternalStorageDirectory().absolutePath + File.separator +
             context.getString(R.string.app_name),
-        "downloads"
+        "downloads",
     ).toUri()
 
     private val defaultBackupDir = File(
         Environment.getExternalStorageDirectory().absolutePath + File.separator +
             context.getString(R.string.app_name),
-        "backup"
+        "backup",
     ).toUri()
 
     fun startScreen() = prefs.getInt(Keys.startScreen, 1)
@@ -57,7 +57,7 @@ class PreferencesHelper(val context: Context) {
 
     fun lastAppUnlock() = flowPrefs.getLong("last_app_unlock", 0)
 
-    fun secureScreen() = flowPrefs.getBoolean("secure_screen", false)
+    fun secureScreen() = flowPrefs.getEnum("secure_screen_v2", Values.SecureScreenMode.INCOGNITO)
 
     fun hideNotificationContent() = prefs.getBoolean(Keys.hideNotificationContent, false)
 
@@ -67,12 +67,12 @@ class PreferencesHelper(val context: Context) {
 
     fun themeMode() = flowPrefs.getEnum(
         "pref_theme_mode_key",
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { Values.ThemeMode.system } else { Values.ThemeMode.light }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { Values.ThemeMode.system } else { Values.ThemeMode.light },
     )
 
     fun appTheme() = flowPrefs.getEnum(
         "pref_app_theme",
-        if (DeviceUtil.isDynamicColorAvailable) { Values.AppTheme.MONET } else { Values.AppTheme.DEFAULT }
+        if (DeviceUtil.isDynamicColorAvailable) { Values.AppTheme.MONET } else { Values.AppTheme.DEFAULT },
     )
 
     fun themeDarkAmoled() = flowPrefs.getBoolean("pref_theme_dark_amoled_key", false)
@@ -129,11 +129,13 @@ class PreferencesHelper(val context: Context) {
 
     fun cropBorders() = flowPrefs.getBoolean("crop_borders", false)
 
+    fun navigateToPan() = flowPrefs.getBoolean("navigate_pan", true)
+
+    fun landscapeZoom() = flowPrefs.getBoolean("landscape_zoom", true)
+
     fun cropBordersWebtoon() = flowPrefs.getBoolean("crop_borders_webtoon", false)
 
     fun webtoonSidePadding() = flowPrefs.getInt("webtoon_side_padding", 0)
-
-    fun readWithTapping() = flowPrefs.getBoolean("reader_tap", true)
 
     fun pagerNavInverted() = flowPrefs.getEnum("reader_tapping_inverted", Values.TappingInvertMode.NONE)
 
@@ -220,7 +222,7 @@ class PreferencesHelper(val context: Context) {
     fun libraryUpdateInterval() = flowPrefs.getInt("pref_library_update_interval_key", 24)
 
     fun libraryUpdateDeviceRestriction() = flowPrefs.getStringSet("library_update_restriction", setOf(DEVICE_ONLY_ON_WIFI))
-    fun libraryUpdateMangaRestriction() = flowPrefs.getStringSet("library_update_manga_restriction", setOf(MANGA_FULLY_READ, MANGA_ONGOING))
+    fun libraryUpdateMangaRestriction() = flowPrefs.getStringSet("library_update_manga_restriction", setOf(MANGA_HAS_UNREAD, MANGA_NON_COMPLETED, MANGA_NON_READ))
 
     fun showUpdatesNavBadge() = flowPrefs.getBoolean("library_update_show_tab_badge", false)
     fun unreadUpdatesCount() = flowPrefs.getInt("library_unread_updates_count", 0)
@@ -247,6 +249,8 @@ class PreferencesHelper(val context: Context) {
     fun filterDownloaded() = flowPrefs.getInt(Keys.filterDownloaded, ExtendedNavigationView.Item.TriStateGroup.State.IGNORE.value)
 
     fun filterUnread() = flowPrefs.getInt(Keys.filterUnread, ExtendedNavigationView.Item.TriStateGroup.State.IGNORE.value)
+
+    fun filterStarted() = flowPrefs.getInt(Keys.filterStarted, ExtendedNavigationView.Item.TriStateGroup.State.IGNORE.value)
 
     fun filterCompleted() = flowPrefs.getInt(Keys.filterCompleted, ExtendedNavigationView.Item.TriStateGroup.State.IGNORE.value)
 
@@ -312,7 +316,7 @@ class PreferencesHelper(val context: Context) {
 
     fun extensionInstaller() = flowPrefs.getEnum(
         "extension_installer",
-        if (DeviceUtil.isMiui) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER
+        if (DeviceUtil.isMiui) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER,
     )
 
     fun verboseLogging() = prefs.getBoolean(Keys.verboseLogging, false)
