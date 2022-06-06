@@ -6,6 +6,7 @@ plugins {
     kotlin("android")
     kotlin("plugin.serialization")
     id("com.github.zellius.shortcut-helper")
+    id("com.squareup.sqldelight")
 }
 
 if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
@@ -24,8 +25,8 @@ android {
         applicationId = "eu.kanade.tachiyomi"
         minSdk = AndroidConfig.minSdk
         targetSdk = AndroidConfig.targetSdk
-        versionCode = 79
-        versionName = "0.13.3"
+        versionCode = 81
+        versionName = "0.13.4"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
@@ -109,6 +110,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        compose = true
 
         // Disable some unused things
         aidl = false
@@ -122,6 +124,10 @@ android {
         checkReleaseBuilds = false
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion = compose.versions.compose.get()
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -130,11 +136,37 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+
+    sqldelight {
+        database("Database") {
+            packageName = "eu.kanade.tachiyomi"
+            dialect = "sqlite:3.24"
+        }
+    }
 }
 
 dependencies {
-    implementation(kotlinx.reflect)
+    // Compose
+    implementation(compose.activity)
+    implementation(compose.foundation)
+    implementation(compose.material3.core)
+    implementation(compose.material3.adapter)
+    implementation(compose.material.icons)
+    implementation(compose.animation)
+    implementation(compose.ui.tooling)
+    implementation(compose.ui.util)
+    implementation(compose.accompanist.webview)
+    implementation(compose.accompanist.swiperefresh)
 
+    implementation(androidx.paging.runtime)
+    implementation(androidx.paging.compose)
+
+    implementation(androidx.sqlite)
+    implementation(libs.sqldelight.android.driver)
+    implementation(libs.sqldelight.coroutines)
+    implementation(libs.sqldelight.android.paging)
+
+    implementation(kotlinx.reflect)
     implementation(kotlinx.bundles.coroutines)
 
     // Source models and interfaces from Tachiyomi 1.x
@@ -219,6 +251,8 @@ dependencies {
         exclude(group = "androidx.viewpager", module = "viewpager")
     }
     implementation(libs.insetter)
+    implementation(libs.markwon)
+    implementation(libs.aboutLibraries.compose)
 
     // Conductor
     implementation(libs.bundles.conductor)
@@ -233,35 +267,39 @@ dependencies {
     implementation(libs.acra.http)
     "standardImplementation"(libs.firebase.analytics)
 
-    // Licenses
-    implementation(libs.aboutlibraries.core)
-
     // Shizuku
     implementation(libs.bundles.shizuku)
 
     // Tests
     testImplementation(libs.junit)
-    testImplementation(libs.assertj.core)
-    testImplementation(libs.mockito.core)
-
-    testImplementation(libs.bundles.robolectric)
 
     // For detecting memory leaks; see https://square.github.io/leakcanary/
     // debugImplementation(libs.leakcanary.android)
+    implementation(libs.leakcanary.plumber)
 }
 
 tasks {
+    withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
+    }
+
     // See https://kotlinlang.org/docs/reference/experimental.html#experimental-status-of-experimental-api(-markers)
     withType<KotlinCompile> {
         kotlinOptions.freeCompilerArgs += listOf(
-            "-Xopt-in=kotlin.Experimental",
-            "-Xopt-in=kotlin.RequiresOptIn",
-            "-Xopt-in=kotlin.ExperimentalStdlibApi",
-            "-Xopt-in=kotlinx.coroutines.FlowPreview",
-            "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-Xopt-in=kotlinx.coroutines.InternalCoroutinesApi",
-            "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            "-Xopt-in=coil.annotation.ExperimentalCoilApi",
+            "-opt-in=kotlin.Experimental",
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlin.ExperimentalStdlibApi",
+            "-opt-in=kotlinx.coroutines.FlowPreview",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=kotlinx.coroutines.InternalCoroutinesApi",
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+            "-opt-in=coil.annotation.ExperimentalCoilApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
         )
     }
 

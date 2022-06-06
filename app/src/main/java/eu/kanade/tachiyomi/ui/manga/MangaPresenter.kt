@@ -185,7 +185,7 @@ class MangaPresenter(
             return Observable.just(0)
         }
 
-        return db.getTracks(manga).asRxObservable()
+        return db.getTracks(manga.id).asRxObservable()
             .map { tracks ->
                 val loggedServices = trackManager.services.filter { it.isLogged }.map { it.id }
                 tracks.filter { it.sync_id in loggedServices }
@@ -335,7 +335,7 @@ class MangaPresenter(
     fun deleteCustomCover(manga: Manga) {
         Observable
             .fromCallable {
-                coverCache.deleteCustomCover(manga)
+                coverCache.deleteCustomCover(manga.id)
                 manga.updateCoverLastModified(db)
                 coverCache.clearMemoryCache()
             }
@@ -431,17 +431,6 @@ class MangaPresenter(
         }
     }
 
-    fun cleanChapterNames(chapters: List<ChapterItem>): List<ChapterItem> {
-        chapters.forEach {
-            it.name = it.name
-                .trim()
-                .removePrefix(manga.title)
-                .trim(*CHAPTER_TRIM_CHARS)
-        }
-
-        return chapters
-    }
-
     /**
      * Updates the UI after applying the filters.
      */
@@ -525,7 +514,7 @@ class MangaPresenter(
     }
 
     fun startDownloadingNow(chapter: Chapter) {
-        downloadManager.startDownloadNow(chapter)
+        downloadManager.startDownloadNow(chapter.id)
     }
 
     /**
@@ -731,7 +720,7 @@ class MangaPresenter(
 
     private fun fetchTrackers() {
         trackSubscription?.let { remove(it) }
-        trackSubscription = db.getTracks(manga)
+        trackSubscription = db.getTracks(manga.id)
             .asRxObservable()
             .map { tracks ->
                 loggedServices.map { service ->
@@ -863,38 +852,3 @@ class MangaPresenter(
 
     // Track sheet - end
 }
-
-private val CHAPTER_TRIM_CHARS = arrayOf(
-    // Whitespace
-    ' ',
-    '\u0009',
-    '\u000A',
-    '\u000B',
-    '\u000C',
-    '\u000D',
-    '\u0020',
-    '\u0085',
-    '\u00A0',
-    '\u1680',
-    '\u2000',
-    '\u2001',
-    '\u2002',
-    '\u2003',
-    '\u2004',
-    '\u2005',
-    '\u2006',
-    '\u2007',
-    '\u2008',
-    '\u2009',
-    '\u200A',
-    '\u2028',
-    '\u2029',
-    '\u202F',
-    '\u205F',
-    '\u3000',
-    // Separators
-    '-',
-    '_',
-    ',',
-    ':',
-).toCharArray()

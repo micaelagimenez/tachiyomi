@@ -8,7 +8,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.view.ActionMode
-import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -26,7 +25,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
@@ -210,9 +209,7 @@ class LibraryController(
 
         binding.btnGlobalSearch.clicks()
             .onEach {
-                router.pushController(
-                    GlobalSearchController(presenter.query).withFadeTransaction(),
-                )
+                router.pushController(GlobalSearchController(presenter.query))
             }
             .launchIn(viewScope)
     }
@@ -304,8 +301,10 @@ class LibraryController(
         onTabsSettingsChanged(firstLaunch = true)
 
         // Delay the scroll position to allow the view to be properly measured.
-        view.doOnAttach {
-            (activity as? MainActivity)?.binding?.tabs?.setScrollPosition(binding.libraryPager.currentItem, 0f, true)
+        view.post {
+            if (isAttached) {
+                (activity as? MainActivity)?.binding?.tabs?.setScrollPosition(binding.libraryPager.currentItem, 0f, true)
+            }
         }
 
         // Send the manga map to child fragments after the adapter is updated.
@@ -468,7 +467,7 @@ class LibraryController(
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_move_to_category -> showChangeMangaCategoriesDialog()
+            R.id.action_move_to_category -> showMangaCategoriesDialog()
             R.id.action_download_unread -> downloadUnreadChapters()
             R.id.action_mark_as_read -> markReadStatus(true)
             R.id.action_mark_as_unread -> markReadStatus(false)
@@ -494,7 +493,7 @@ class LibraryController(
         // Notify the presenter a manga is being opened.
         presenter.onOpenManga()
 
-        router.pushController(MangaController(manga).withFadeTransaction())
+        router.pushController(MangaController(manga))
     }
 
     /**
@@ -541,7 +540,7 @@ class LibraryController(
     /**
      * Move the selected manga to a list of categories.
      */
-    private fun showChangeMangaCategoriesDialog() {
+    private fun showMangaCategoriesDialog() {
         // Create a copy of selected manga
         val mangas = selectedMangas.toList()
 

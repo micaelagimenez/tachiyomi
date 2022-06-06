@@ -10,40 +10,20 @@ object HistoryTable {
     /**
      * Id column name
      */
-    const val COL_ID = "${TABLE}_id"
+    const val COL_ID = "_id"
 
     /**
      * Chapter id column name
      */
-    const val COL_CHAPTER_ID = "${TABLE}_chapter_id"
+    const val COL_CHAPTER_ID = "chapter_id"
 
     /**
      * Last read column name
      */
-    const val COL_LAST_READ = "${TABLE}_last_read"
+    const val COL_LAST_READ = "last_read"
 
     /**
      * Time read column name
      */
-    const val COL_TIME_READ = "${TABLE}_time_read"
-
-    /**
-     * query to create history table
-     */
-    val createTableQuery: String
-        get() =
-            """CREATE TABLE $TABLE(
-            $COL_ID INTEGER NOT NULL PRIMARY KEY,
-            $COL_CHAPTER_ID INTEGER NOT NULL UNIQUE,
-            $COL_LAST_READ LONG,
-            $COL_TIME_READ LONG,
-            FOREIGN KEY($COL_CHAPTER_ID) REFERENCES ${ChapterTable.TABLE} (${ChapterTable.COL_ID})
-            ON DELETE CASCADE
-            )"""
-
-    /**
-     * query to index history chapter id
-     */
-    val createChapterIdIndexQuery: String
-        get() = "CREATE INDEX ${TABLE}_${COL_CHAPTER_ID}_index ON $TABLE($COL_CHAPTER_ID)"
+    const val COL_TIME_READ = "time_read"
 }

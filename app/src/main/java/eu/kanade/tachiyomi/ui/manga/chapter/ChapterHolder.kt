@@ -6,6 +6,7 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.ChaptersItemBinding
 import eu.kanade.tachiyomi.source.LocalSource
@@ -24,6 +25,10 @@ class ChapterHolder(
         binding.download.setOnClickListener {
             onDownloadClick(it, bindingAdapterPosition)
         }
+        binding.download.setOnLongClickListener {
+            onDownloadLongClick(bindingAdapterPosition)
+            true
+        }
     }
 
     fun bind(item: ChapterItem, manga: Manga) {
@@ -35,6 +40,8 @@ class ChapterHolder(
                 itemView.context.getString(R.string.display_mode_chapter, number)
             }
             else -> chapter.name
+            // TODO: show cleaned name consistently around the app
+            // else -> cleanChapterName(chapter, manga)
         }
 
         // Set correct text color
@@ -80,4 +87,47 @@ class ChapterHolder(
         binding.download.isVisible = item.manga.source != LocalSource.ID
         binding.download.setState(item.status, item.progress)
     }
+
+    private fun cleanChapterName(chapter: Chapter, manga: Manga): String {
+        return chapter.name
+            .trim()
+            .removePrefix(manga.title)
+            .trim(*CHAPTER_TRIM_CHARS)
+    }
 }
+
+private val CHAPTER_TRIM_CHARS = arrayOf(
+    // Whitespace
+    ' ',
+    '\u0009',
+    '\u000A',
+    '\u000B',
+    '\u000C',
+    '\u000D',
+    '\u0020',
+    '\u0085',
+    '\u00A0',
+    '\u1680',
+    '\u2000',
+    '\u2001',
+    '\u2002',
+    '\u2003',
+    '\u2004',
+    '\u2005',
+    '\u2006',
+    '\u2007',
+    '\u2008',
+    '\u2009',
+    '\u200A',
+    '\u2028',
+    '\u2029',
+    '\u202F',
+    '\u205F',
+    '\u3000',
+
+    // Separators
+    '-',
+    '_',
+    ',',
+    ':',
+).toCharArray()
