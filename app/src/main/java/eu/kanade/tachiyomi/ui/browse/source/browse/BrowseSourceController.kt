@@ -20,10 +20,11 @@ import com.google.android.material.snackbar.Snackbar
 import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
+import eu.kanade.domain.category.model.Category
+import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.source.model.Source
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Category
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.SourceControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -42,7 +43,9 @@ import eu.kanade.tachiyomi.ui.manga.AddDuplicateMangaDialog
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.more.MoreController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.preference.asImmediateFlow
+import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.preference.asHotFlow
 import eu.kanade.tachiyomi.util.system.connectivityManager
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.openInBrowser
@@ -138,6 +141,8 @@ open class BrowseSourceController(bundle: Bundle) :
         setupRecycler(view)
 
         binding.progress.isVisible = true
+
+        presenter.restartPager()
     }
 
     open fun initFilterSheet() {
@@ -215,7 +220,7 @@ open class BrowseSourceController(bundle: Bundle) :
             }
         } else {
             (binding.catalogueView.inflate(R.layout.source_recycler_autofit) as AutofitRecyclerView).apply {
-                numColumnsJob = getColumnsPreferenceForCurrentOrientation().asImmediateFlow { spanCount = it }
+                numColumnsJob = getColumnsPreferenceForCurrentOrientation().asHotFlow { spanCount = it }
                     .drop(1)
                     // Set again the adapter to recalculate the covers height
                     .onEach { adapter = this@BrowseSourceController.adapter }
@@ -345,11 +350,11 @@ open class BrowseSourceController(bundle: Bundle) :
      * @param genreName the name of the genre
      */
     fun searchWithGenre(genreName: String) {
-        presenter.sourceFilters = presenter.source.getFilterList()
+        val defaultFilters = presenter.source.getFilterList()
 
-        var filterList: FilterList? = null
+        var genreExists = false
 
-        filter@ for (sourceFilter in presenter.sourceFilters) {
+        filter@ for (sourceFilter in defaultFilters) {
             if (sourceFilter is Filter.Group<*>) {
                 for (filter in sourceFilter.state) {
                     if (filter is Filter<*> && filter.name.equals(genreName, true)) {
@@ -358,7 +363,7 @@ open class BrowseSourceController(bundle: Bundle) :
                             is Filter.CheckBox -> filter.state = true
                             else -> {}
                         }
-                        filterList = presenter.sourceFilters
+                        genreExists = true
                         break@filter
                     }
                 }
@@ -368,19 +373,20 @@ open class BrowseSourceController(bundle: Bundle) :
 
                 if (index != -1) {
                     sourceFilter.state = index
-                    filterList = presenter.sourceFilters
+                    genreExists = true
                     break
                 }
             }
         }
 
-        if (filterList != null) {
+        if (genreExists) {
+            presenter.sourceFilters = defaultFilters
             filterSheet?.setFilters(presenter.filterItems)
 
             showProgressBar()
 
             adapter?.clear()
-            presenter.restartPager("", filterList)
+            presenter.restartPager("", defaultFilters)
         } else {
             searchWithQuery(genreName)
         }
@@ -538,7 +544,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
         adapter.allBoundViewHolders.forEach { holder ->
             val item = adapter.getItem(holder.bindingAdapterPosition) as? SourceItem
-            if (item != null && item.manga.id!! == manga.id!!) {
+            if (item != null && item.manga.id == manga.id) {
                 return holder as SourceHolder<*>
             }
         }
@@ -572,7 +578,7 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     override fun onItemClick(view: View, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
-        router.pushController(MangaController(item.manga, true))
+        router.pushController(MangaController(item.manga.id, true))
 
         return false
     }
@@ -589,69 +595,82 @@ open class BrowseSourceController(bundle: Bundle) :
     override fun onItemLongClick(position: Int) {
         val activity = activity ?: return
         val manga = (adapter?.getItem(position) as? SourceItem?)?.manga ?: return
-        val duplicateManga = presenter.getDuplicateLibraryManga(manga)
+        launchIO {
+            val duplicateManga = presenter.getDuplicateLibraryManga(manga)
 
-        if (manga.favorite) {
-            MaterialAlertDialogBuilder(activity)
-                .setTitle(manga.title)
-                .setItems(arrayOf(activity.getString(R.string.remove_from_library))) { _, which ->
-                    when (which) {
-                        0 -> {
-                            presenter.changeMangaFavorite(manga)
-                            adapter?.notifyItemChanged(position)
-                            activity.toast(activity.getString(R.string.manga_removed_library))
+            withUIContext {
+                if (manga.favorite) {
+                    MaterialAlertDialogBuilder(activity)
+                        .setTitle(manga.title)
+                        .setItems(arrayOf(activity.getString(R.string.remove_from_library))) { _, which ->
+                            when (which) {
+                                0 -> {
+                                    presenter.changeMangaFavorite(manga.toDbManga())
+                                    adapter?.notifyItemChanged(position)
+                                    activity.toast(activity.getString(R.string.manga_removed_library))
+                                }
+                            }
                         }
+                        .show()
+                } else {
+                    if (duplicateManga != null) {
+                        AddDuplicateMangaDialog(this@BrowseSourceController, duplicateManga) {
+                            addToLibrary(
+                                manga,
+                                position,
+                            )
+                        }
+                            .showDialog(router)
+                    } else {
+                        addToLibrary(manga, position)
                     }
                 }
-                .show()
-        } else {
-            if (duplicateManga != null) {
-                AddDuplicateMangaDialog(this, duplicateManga) { addToLibrary(manga, position) }
-                    .showDialog(router)
-            } else {
-                addToLibrary(manga, position)
             }
         }
     }
 
     private fun addToLibrary(newManga: Manga, position: Int) {
         val activity = activity ?: return
-        val categories = presenter.getCategories()
-        val defaultCategoryId = preferences.defaultCategory()
-        val defaultCategory = categories.find { it.id == defaultCategoryId }
+        launchIO {
+            val categories = presenter.getCategories()
+            val defaultCategoryId = preferences.defaultCategory()
+            val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
 
-        when {
-            // Default category set
-            defaultCategory != null -> {
-                presenter.moveMangaToCategory(newManga, defaultCategory)
+            withUIContext {
+                when {
+                    // Default category set
+                    defaultCategory != null -> {
+                        presenter.moveMangaToCategory(newManga.toDbManga(), defaultCategory)
 
-                presenter.changeMangaFavorite(newManga)
-                adapter?.notifyItemChanged(position)
-                activity.toast(activity.getString(R.string.manga_added_library))
-            }
-
-            // Automatic 'Default' or no categories
-            defaultCategoryId == 0 || categories.isEmpty() -> {
-                presenter.moveMangaToCategory(newManga, null)
-
-                presenter.changeMangaFavorite(newManga)
-                adapter?.notifyItemChanged(position)
-                activity.toast(activity.getString(R.string.manga_added_library))
-            }
-
-            // Choose a category
-            else -> {
-                val ids = presenter.getMangaCategoryIds(newManga)
-                val preselected = categories.map {
-                    if (it.id in ids) {
-                        QuadStateTextView.State.CHECKED.ordinal
-                    } else {
-                        QuadStateTextView.State.UNCHECKED.ordinal
+                        presenter.changeMangaFavorite(newManga.toDbManga())
+                        adapter?.notifyItemChanged(position)
+                        activity.toast(activity.getString(R.string.manga_added_library))
                     }
-                }.toTypedArray()
 
-                ChangeMangaCategoriesDialog(this, listOf(newManga), categories, preselected)
-                    .showDialog(router)
+                    // Automatic 'Default' or no categories
+                    defaultCategoryId == 0 || categories.isEmpty() -> {
+                        presenter.moveMangaToCategory(newManga.toDbManga(), null)
+
+                        presenter.changeMangaFavorite(newManga.toDbManga())
+                        adapter?.notifyItemChanged(position)
+                        activity.toast(activity.getString(R.string.manga_added_library))
+                    }
+
+                    // Choose a category
+                    else -> {
+                        val ids = presenter.getMangaCategoryIds(newManga)
+                        val preselected = categories.map {
+                            if (it.id in ids) {
+                                QuadStateTextView.State.CHECKED.ordinal
+                            } else {
+                                QuadStateTextView.State.UNCHECKED.ordinal
+                            }
+                        }.toTypedArray()
+
+                        ChangeMangaCategoriesDialog(this@BrowseSourceController, listOf(newManga), categories, preselected)
+                            .showDialog(router)
+                    }
+                }
             }
         }
     }
@@ -665,8 +684,8 @@ open class BrowseSourceController(bundle: Bundle) :
     override fun updateCategoriesForMangas(mangas: List<Manga>, addCategories: List<Category>, removeCategories: List<Category>) {
         val manga = mangas.firstOrNull() ?: return
 
-        presenter.changeMangaFavorite(manga)
-        presenter.updateMangaCategories(manga, addCategories)
+        presenter.changeMangaFavorite(manga.toDbManga())
+        presenter.updateMangaCategories(manga.toDbManga(), addCategories)
 
         val position = adapter?.currentItems?.indexOfFirst { it -> (it as SourceItem).manga.id == manga.id }
         if (position != null) {

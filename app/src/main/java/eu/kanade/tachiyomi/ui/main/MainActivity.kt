@@ -43,7 +43,7 @@ import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.FabController
-import eu.kanade.tachiyomi.ui.base.controller.NoAppBarElevationController
+import eu.kanade.tachiyomi.ui.base.controller.FullComposeContentController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -61,14 +61,13 @@ import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.preference.asImmediateFlow
+import eu.kanade.tachiyomi.util.preference.asHotFlow
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getThemeColor
 import eu.kanade.tachiyomi.util.system.isTablet
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setNavigationBarTransparentCompat
-import eu.kanade.tachiyomi.widget.ActionModeWithToolbar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
@@ -144,7 +143,7 @@ class MainActivity : BaseActivity() {
 
         if (binding.sideNav != null) {
             preferences.sideNavIconAlignment()
-                .asImmediateFlow {
+                .asHotFlow {
                     binding.sideNav?.menuGravity = when (it) {
                         1 -> Gravity.CENTER
                         2 -> Gravity.BOTTOM
@@ -225,7 +224,7 @@ class MainActivity : BaseActivity() {
         if (!router.hasRootController()) {
             // Set start screen
             if (!handleIntentAction(intent)) {
-                setSelectedNavItem(startScreenId)
+                moveToStartScreen()
             }
         }
         syncActivityViewWithController()
@@ -254,11 +253,11 @@ class MainActivity : BaseActivity() {
             .launchIn(lifecycleScope)
 
         preferences.extensionUpdatesCount()
-            .asImmediateFlow { setExtensionsBadge() }
+            .asHotFlow { setExtensionsBadge() }
             .launchIn(lifecycleScope)
 
         preferences.downloadedOnly()
-            .asImmediateFlow { binding.downloadedOnly.isVisible = it }
+            .asHotFlow { binding.downloadedOnly.isVisible = it }
             .launchIn(lifecycleScope)
 
         binding.incognitoMode.isVisible = preferences.incognitoMode().get()
@@ -366,7 +365,10 @@ class MainActivity : BaseActivity() {
 
             // Extension updates
             try {
-                ExtensionGithubApi().checkForUpdates(this@MainActivity)?.let { pendingUpdates ->
+                ExtensionGithubApi().checkForUpdates(
+                    this@MainActivity,
+                    fromAvailableExtensionList = true,
+                )?.let { pendingUpdates ->
                     preferences.extensionUpdatesCount().set(pendingUpdates.size)
                 }
             } catch (e: Exception) {
@@ -378,7 +380,10 @@ class MainActivity : BaseActivity() {
     private fun setUnreadUpdatesBadge() {
         val updates = if (preferences.showUpdatesNavBadge().get()) preferences.unreadUpdatesCount().get() else 0
         if (updates > 0) {
-            nav.getOrCreateBadge(R.id.nav_updates).number = updates
+            nav.getOrCreateBadge(R.id.nav_updates).apply {
+                number = updates
+                setContentDescriptionQuantityStringsResource(R.plurals.notification_chapters_generic)
+            }
         } else {
             nav.removeBadge(R.id.nav_updates)
         }
@@ -387,7 +392,10 @@ class MainActivity : BaseActivity() {
     private fun setExtensionsBadge() {
         val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
-            nav.getOrCreateBadge(R.id.nav_browse).number = updates
+            nav.getOrCreateBadge(R.id.nav_browse).apply {
+                number = updates
+                setContentDescriptionQuantityStringsResource(R.plurals.update_check_notification_ext_updates)
+            }
         } else {
             nav.removeBadge(R.id.nav_browse)
         }
@@ -416,7 +424,7 @@ class MainActivity : BaseActivity() {
             SHORTCUT_MANGA -> {
                 val extras = intent.extras ?: return false
                 val fgController = router.backstack.lastOrNull()?.controller as? MangaController
-                if (fgController?.manga?.id != extras.getLong(MangaController.MANGA_EXTRA)) {
+                if (fgController?.mangaId != extras.getLong(MangaController.MANGA_EXTRA)) {
                     router.popToRoot()
                     setSelectedNavItem(R.id.nav_library)
                     router.pushController(RouterTransaction.with(MangaController(extras)))
@@ -469,14 +477,22 @@ class MainActivity : BaseActivity() {
 
         // Binding sometimes isn't actually instantiated yet somehow
         nav?.setOnItemSelectedListener(null)
-        binding?.toolbar.setNavigationOnClickListener(null)
+        binding?.toolbar?.setNavigationOnClickListener(null)
     }
 
     override fun onBackPressed() {
+        // Updates screen has custom back handler
+        if (router.getControllerWithTag("${R.id.nav_updates}") != null) {
+            router.handleBack()
+            return
+        }
         val backstackSize = router.backstackSize
-        if (backstackSize == 1 && router.getControllerWithTag("$startScreenId") == null) {
+        val startScreen = router.getControllerWithTag("$startScreenId")
+        if (backstackSize == 1 && startScreen == null) {
             // Return to start screen
-            setSelectedNavItem(startScreenId)
+            moveToStartScreen()
+        } else if (startScreen != null && router.handleBack()) {
+            // Clear selection for Library screen
         } else if (shouldHandleExitConfirmation()) {
             // Exit confirmation (resets after 2 seconds)
             lifecycleScope.launchUI { resetExitConfirmation() }
@@ -487,6 +503,10 @@ class MainActivity : BaseActivity() {
             }
             super.onBackPressed()
         }
+    }
+
+    fun moveToStartScreen() {
+        setSelectedNavItem(startScreenId)
     }
 
     override fun onSupportActionModeStarted(mode: ActionMode) {
@@ -511,11 +531,6 @@ class MainActivity : BaseActivity() {
         super.onSupportActionModeFinished(mode)
     }
 
-    fun startActionModeAndToolbar(modeCallback: ActionModeWithToolbar.Callback): ActionModeWithToolbar {
-        binding.actionToolbar.start(modeCallback)
-        return binding.actionToolbar
-    }
-
     private suspend fun resetExitConfirmation() {
         isConfirmingExit = true
         val toast = toast(R.string.confirm_exit, Toast.LENGTH_LONG)
@@ -538,15 +553,28 @@ class MainActivity : BaseActivity() {
     }
 
     private fun syncActivityViewWithController(
-        to: Controller? = router.backstack.lastOrNull()?.controller,
+        to: Controller? = null,
         from: Controller? = null,
         isPush: Boolean = true,
     ) {
-        if (from is DialogController || to is DialogController) {
-            return
-        }
-        if (from is PreferenceDialogController || to is PreferenceDialogController) {
-            return
+        var internalTo = to
+
+        if (internalTo == null) {
+            // Should go here when the activity is recreated and dialog controller is on top of the backstack
+            // Then we'll assume the top controller is the parent controller of this dialog
+            val backstack = router.backstack
+            internalTo = backstack.lastOrNull()?.controller
+            if (internalTo is DialogController || internalTo is PreferenceDialogController) {
+                internalTo = backstack.getOrNull(backstack.size - 2)?.controller ?: return
+            }
+        } else {
+            // Ignore changes for normal transactions
+            if (from is DialogController || internalTo is DialogController) {
+                return
+            }
+            if (from is PreferenceDialogController || internalTo is PreferenceDialogController) {
+                return
+            }
         }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(router.backstackSize != 1)
@@ -554,10 +582,10 @@ class MainActivity : BaseActivity() {
         // Always show appbar again when changing controllers
         binding.appbar.setExpanded(true)
 
-        if ((from == null || from is RootController) && to !is RootController) {
+        if ((from == null || from is RootController) && internalTo !is RootController) {
             showNav(false)
         }
-        if (to is RootController) {
+        if (internalTo is RootController) {
             // Always show bottom nav again when returning to a RootController
             showNav(true)
         }
@@ -565,8 +593,8 @@ class MainActivity : BaseActivity() {
         if (from is TabbedController) {
             from.cleanupTabs(binding.tabs)
         }
-        if (to is TabbedController) {
-            if (to.configureTabs(binding.tabs)) {
+        if (internalTo is TabbedController) {
+            if (internalTo.configureTabs(binding.tabs)) {
                 binding.tabs.isVisible = true
             }
         } else {
@@ -576,12 +604,16 @@ class MainActivity : BaseActivity() {
         if (from is FabController) {
             from.cleanupFab(binding.fabLayout.rootFab)
         }
-        if (to is FabController) {
+        if (internalTo is FabController) {
             binding.fabLayout.rootFab.show()
-            to.configureFab(binding.fabLayout.rootFab)
+            internalTo.configureFab(binding.fabLayout.rootFab)
         } else {
             binding.fabLayout.rootFab.hide()
         }
+
+        val isFullComposeController = internalTo is FullComposeContentController
+        binding.appbar.isVisible = !isFullComposeController
+        binding.controllerContainer.enableScrollingBehavior(!isFullComposeController)
 
         if (!isTablet()) {
             // Save lift state
@@ -596,18 +628,13 @@ class MainActivity : BaseActivity() {
                 }
                 binding.appbar.isLifted = false
             } else {
-                to?.let {
+                internalTo?.let {
                     binding.appbar.isLifted = backstackLiftState.getOrElse(it.instanceId) { false }
                 }
                 from?.let {
                     backstackLiftState.remove(it.instanceId)
                 }
             }
-
-            binding.root.isLiftAppBarOnScroll = to !is NoAppBarElevationController
-
-            binding.appbar.isTransparentWhenNotLifted = to is MangaController
-            binding.controllerContainer.overlapHeader = to is MangaController
         }
     }
 

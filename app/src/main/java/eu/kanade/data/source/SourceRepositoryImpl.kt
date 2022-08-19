@@ -2,6 +2,7 @@ package eu.kanade.data.source
 
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.source.model.Source
+import eu.kanade.domain.source.model.SourceWithCount
 import eu.kanade.domain.source.repository.SourceRepository
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
@@ -29,13 +30,23 @@ class SourceRepositoryImpl(
         val sourceIdWithFavoriteCount = handler.subscribeToList { mangasQueries.getSourceIdWithFavoriteCount() }
         return sourceIdWithFavoriteCount.map { sourceIdsWithCount ->
             sourceIdsWithCount
+                .filterNot { it.source == LocalSource.ID }
                 .map { (sourceId, count) ->
                     val source = sourceManager.getOrStub(sourceId).run {
                         sourceMapper(this)
                     }
                     source to count
                 }
-                .filterNot { it.first.id == LocalSource.ID }
+        }
+    }
+
+    override fun getSourcesWithNonLibraryManga(): Flow<List<SourceWithCount>> {
+        val sourceIdWithNonLibraryManga = handler.subscribeToList { mangasQueries.getSourceIdsWithNonLibraryManga() }
+        return sourceIdWithNonLibraryManga.map { sourceId ->
+            sourceId.map { (sourceId, count) ->
+                val source = sourceManager.getOrStub(sourceId)
+                SourceWithCount(sourceMapper(source), count)
+            }
         }
     }
 }

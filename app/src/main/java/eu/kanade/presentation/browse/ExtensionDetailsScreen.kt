@@ -1,5 +1,8 @@
 package eu.kanade.presentation.browse
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.util.DisplayMetrics
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -32,7 +35,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,11 +47,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.ExtensionIcon
 import eu.kanade.presentation.components.DIVIDER_ALPHA
 import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.EmptyScreen
+import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.util.horizontalPadding
@@ -65,65 +69,68 @@ fun ExtensionDetailsScreen(
     nestedScrollInterop: NestedScrollConnection,
     presenter: ExtensionDetailsPresenter,
     onClickUninstall: () -> Unit,
-    onClickAppInfo: () -> Unit,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
 ) {
-    val extension = presenter.extension
+    when {
+        presenter.isLoading -> LoadingScreen()
+        presenter.extension == null -> EmptyScreen(textResource = R.string.empty_screen)
+        else -> {
+            val context = LocalContext.current
+            val extension = presenter.extension
+            var showNsfwWarning by remember { mutableStateOf(false) }
 
-    if (extension == null) {
-        EmptyScreen(textResource = R.string.empty_screen)
-        return
-    }
-
-    val sources by presenter.sourcesState.collectAsState()
-
-    var showNsfwWarning by remember { mutableStateOf(false) }
-
-    ScrollbarLazyColumn(
-        modifier = Modifier.nestedScroll(nestedScrollInterop),
-        contentPadding = WindowInsets.navigationBars.asPaddingValues(),
-    ) {
-        when {
-            extension.isUnofficial ->
-                item {
-                    WarningBanner(R.string.unofficial_extension_message)
+            ScrollbarLazyColumn(
+                modifier = Modifier.nestedScroll(nestedScrollInterop),
+                contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+            ) {
+                when {
+                    extension.isUnofficial ->
+                        item {
+                            WarningBanner(R.string.unofficial_extension_message)
+                        }
+                    extension.isObsolete ->
+                        item {
+                            WarningBanner(R.string.obsolete_extension_message)
+                        }
                 }
-            extension.isObsolete ->
+
                 item {
-                    WarningBanner(R.string.obsolete_extension_message)
+                    DetailsHeader(
+                        extension = extension,
+                        onClickUninstall = onClickUninstall,
+                        onClickAppInfo = {
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", extension.pkgName, null)
+                                context.startActivity(this)
+                            }
+                        },
+                        onClickAgeRating = {
+                            showNsfwWarning = true
+                        },
+                    )
                 }
-        }
 
-        item {
-            DetailsHeader(
-                extension = extension,
-                onClickUninstall = onClickUninstall,
-                onClickAppInfo = onClickAppInfo,
-                onClickAgeRating = {
-                    showNsfwWarning = true
-                },
-            )
+                items(
+                    items = presenter.sources,
+                    key = { it.source.id },
+                ) { source ->
+                    SourceSwitchPreference(
+                        modifier = Modifier.animateItemPlacement(),
+                        source = source,
+                        onClickSourcePreferences = onClickSourcePreferences,
+                        onClickSource = onClickSource,
+                    )
+                }
+            }
+            if (showNsfwWarning) {
+                NsfwWarningDialog(
+                    onClickConfirm = {
+                        showNsfwWarning = false
+                    },
+                )
+            }
         }
-
-        items(
-            items = sources,
-            key = { it.source.id },
-        ) { source ->
-            SourceSwitchPreference(
-                modifier = Modifier.animateItemPlacement(),
-                source = source,
-                onClickSourcePreferences = onClickSourcePreferences,
-                onClickSource = onClickSource,
-            )
-        }
-    }
-    if (showNsfwWarning) {
-        NsfwWarningDialog(
-            onClickConfirm = {
-                showNsfwWarning = false
-            },
-        )
     }
 }
 
@@ -139,6 +146,7 @@ private fun WarningBanner(@StringRes textRes: Int) {
         Text(
             text = stringResource(textRes),
             color = MaterialTheme.colorScheme.onError,
+            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }
@@ -195,6 +203,7 @@ private fun DetailsHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             InfoText(
+                modifier = Modifier.weight(1f),
                 primaryText = extension.versionName,
                 secondaryText = stringResource(R.string.ext_info_version),
             )
@@ -202,6 +211,7 @@ private fun DetailsHeader(
             InfoDivider()
 
             InfoText(
+                modifier = Modifier.weight(if (extension.isNsfw) 1.5f else 1f),
                 primaryText = LocaleHelper.getSourceDisplayName(extension.lang, context),
                 secondaryText = stringResource(R.string.ext_info_language),
             )
@@ -210,6 +220,7 @@ private fun DetailsHeader(
                 InfoDivider()
 
                 InfoText(
+                    modifier = Modifier.weight(1f),
                     primaryText = stringResource(R.string.ext_nsfw_short),
                     primaryTextStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.error,
@@ -255,6 +266,7 @@ private fun DetailsHeader(
 
 @Composable
 private fun InfoText(
+    modifier: Modifier,
     primaryText: String,
     primaryTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     secondaryText: String,
@@ -262,22 +274,24 @@ private fun InfoText(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    val modifier = if (onClick != null) {
+    val clickableModifier = if (onClick != null) {
         Modifier.clickable(interactionSource, indication = null) { onClick() }
     } else Modifier
 
     Column(
-        modifier = modifier,
+        modifier = modifier.then(clickableModifier),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = primaryText,
+            textAlign = TextAlign.Center,
             style = primaryTextStyle,
         )
 
         Text(
             text = secondaryText + if (onClick != null) " ⓘ" else "",
+            textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )

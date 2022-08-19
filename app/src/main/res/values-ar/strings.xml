@@ -81,7 +81,7 @@
     <string name="update_weekly">أسبوعياً</string>
     <string name="all">الكل</string>
     <string name="pref_library_update_restriction">تقييد التحديث التلقائي للجهاز</string>
-    <string name="charging">جاري الشحن</string>
+    <string name="charging">عند الشحن</string>
     <string name="pref_update_only_non_completed">سلسلة منتهية</string>
     <string name="pref_auto_update_manga_sync">تحديث تقدّم الفصول بعد القراءة</string>
     <string name="default_category">الفئة الافتراضية</string>
@@ -238,7 +238,6 @@
     <string name="update_check_notification_download_complete">اضغط للتنزيل</string>
     <string name="update_check_notification_download_error">حدث خطأ في التنزيل</string>
     <string name="update_check_notification_update_available">نسخة جديدة متوفرة!</string>
-    <string name="description_cover">غلاف المانجا</string>
     <string name="information_no_downloads">لا توجد تنزيلات</string>
     <string name="information_no_recent">لا توجد تحديثات جديدة</string>
     <string name="information_no_recent_manga">لم تقم بقراءة شيء مُؤخّراً</string>
@@ -742,7 +741,7 @@
 \nهل مازلت تريد أن تكمل؟</string>
     <string name="pref_update_only_started">لم تقرأ أي فصول</string>
     <string name="skipped_reason_completed">تم تخطيها لإنتهاء السلسلة</string>
-    <string name="pref_navigate_pan">قود للتحرك</string>
+    <string name="pref_navigate_pan">قُدْ للتحرك</string>
     <string name="pref_landscape_zoom">كبر الصوره الأفقية</string>
     <string name="channel_skipped">متجاوز</string>
     <string name="error_saving_picture">خطأ أثناء حفظ الصورة</string>
@@ -759,7 +758,7 @@
     <string name="pref_clear_webview_data">حذف بيانات التصفح المؤقتة</string>
     <string name="pref_duplicate_pinned_sources">عرض المصادر المثبتة المتكررة</string>
     <string name="webview_data_deleted">تم حذف بيانات التصفح المؤقتة</string>
-    <string name="battery_not_low">البطارية ليست منخفضة</string>
+    <string name="battery_not_low">عند ارتفاع نسبة الشحن‌</string>
     <string name="pref_duplicate_pinned_sources_summary">تكرار المصادر المثبتة في مجموعات اللغة الخاصة بها</string>
     <string name="source_filter_empty_screen">لا يوجد مصادر مثبته</string>
     <string name="source_empty_screen">لا يوجد مصدر</string>
@@ -777,4 +776,26 @@
     <string name="pref_reset_viewer_flags_error">لم يمكن إعادة تعيين إعدادات القارئ</string>
     <string name="download_notifier_split_failed">لم يمكن تقسيم الصورة المُنزلَة</string>
     <string name="empty_screen">هذا محرج</string>
+    <string name="unfinished_list">قائمة غير المنتهية</string>
+    <string name="network_not_metered">على الشبكات غير المحدودة فقط</string>
+    <string name="pref_reset_viewer_flags">إعادة ضبط إعدادات قراءة السلسلة</string>
+    <string name="reading_list">قائمة القراءة</string>
+    <string name="wish_list">قائمة الرغبات</string>
+    <string name="complete_list">قائمة الكاملة</string>
+    <string name="on_hold_list">قائمة المعلقة</string>
+    <string name="custom_cover">غلاف مخصص</string>
+    <string name="cant_open_last_read_chapter">غير قادر على فتح آخر فصل تم قراءته</string>
+    <string name="not_installed">غير مثبت</string>
+    <string name="pref_app_language">لغة تطبيق</string>
+    <string name="delete_category_confirmation">هل تُريد محو هذه الفئة \"%s\"؟</string>
+    <string name="internal_error">خطأ داخلي: تحقق من سجل الاعطال لمزيداً من المعلومات</string>
+    <string name="pref_reset_user_agent_string">اعادة ضبط وتر وكيل ألمستخدم الإفتراضي</string>
+    <string name="pref_user_agent_string">وتر وكيل المستخدم الافتراضي</string>
+    <string name="delete_category">مسح الفئة</string>
+    <string name="description_placeholder">لا وصف</string>
+    <string name="theme_lavender">أُرجواني</string>
+    <string name="appwidget_unavailable_locked">القطعة غير متاحة عند تمكين قفل التطبيق</string>
+    <string name="appwidget_updates_description">شاهد المانقا المجدده حديثاً</string>
+    <string name="action_remove_everything">حذف كل شيء</string>
+    <string name="loader_rar5_error">الصيغه RARv5 غير مدعومه</string>
 </resources>

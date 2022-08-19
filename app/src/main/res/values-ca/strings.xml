@@ -288,7 +288,6 @@
     <string name="update_check_notification_download_complete">Premeu per a instal·lar</string>
     <string name="update_check_notification_download_error">Error de baixada</string>
     <string name="update_check_notification_update_available">Nova versió disponible!</string>
-    <string name="description_cover">Portada del manga</string>
     <string name="information_no_downloads">No hi ha baixades</string>
     <string name="information_no_recent">No hi ha actualitzacions recents</string>
     <string name="information_no_recent_manga">No heu llegit res recentment</string>
@@ -737,4 +736,18 @@
     <string name="unfinished_list">Llista d\'inacabats</string>
     <string name="network_not_metered">Només en xarxes sense límits de dades</string>
     <string name="cant_open_last_read_chapter">No s\'ha pogut obrir el darrer capítol llegit</string>
+    <string name="custom_cover">Portada personalitzada</string>
+    <string name="not_installed">No instal·lat</string>
+    <string name="pref_app_language">Llengua de l\'aplicació</string>
+    <string name="delete_category_confirmation">Voleu eliminar la categoria «%s»\?</string>
+    <string name="delete_category">Elimina la categoria</string>
+    <string name="theme_lavender">Lavanda</string>
+    <string name="description_placeholder">Sense descripció</string>
+    <string name="internal_error">Error intern: Reviseu els registres de fallades per a més informació</string>
+    <string name="pref_user_agent_string">Cadena d\'agent d\'usuari per defecte</string>
+    <string name="pref_reset_user_agent_string">Restableix la cadena d\'agent d\'usuari per defecte</string>
+    <string name="appwidget_unavailable_locked">El widget no està disponible quan hi ha activat el blocatge de l\'aplicació</string>
+    <string name="loader_rar5_error">El format RARv5 no està suportat</string>
+    <string name="appwidget_updates_description">Vegeu els vostres mangues actualitzats recentment</string>
+    <string name="action_remove_everything">Elimina-ho tot</string>
 </resources>

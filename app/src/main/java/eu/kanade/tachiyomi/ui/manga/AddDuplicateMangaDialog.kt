@@ -4,8 +4,8 @@ import android.app.Dialog
 import android.os.Bundle
 import com.bluelinelabs.conductor.Controller
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -40,7 +40,7 @@ class AddDuplicateMangaDialog(bundle: Bundle? = null) : DialogController(bundle)
             .setNegativeButton(android.R.string.cancel, null)
             .setNeutralButton(activity?.getString(R.string.action_show_manga)) { _, _ ->
                 dismissDialog()
-                router.pushController(MangaController(libraryManga))
+                router.pushController(MangaController(libraryManga.id))
             }
             .setCancelable(true)
             .create()

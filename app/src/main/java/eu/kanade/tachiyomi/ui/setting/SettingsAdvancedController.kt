@@ -17,9 +17,15 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.network.PREF_DOH_360
 import eu.kanade.tachiyomi.network.PREF_DOH_ADGUARD
+import eu.kanade.tachiyomi.network.PREF_DOH_ALIDNS
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
+import eu.kanade.tachiyomi.network.PREF_DOH_CONTROLD
+import eu.kanade.tachiyomi.network.PREF_DOH_DNSPOD
 import eu.kanade.tachiyomi.network.PREF_DOH_GOOGLE
+import eu.kanade.tachiyomi.network.PREF_DOH_MULLVAD
+import eu.kanade.tachiyomi.network.PREF_DOH_QUAD101
 import eu.kanade.tachiyomi.network.PREF_DOH_QUAD9
 import eu.kanade.tachiyomi.ui.base.controller.openInBrowser
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -29,6 +35,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
+import eu.kanade.tachiyomi.util.preference.editTextPreference
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.listPreference
@@ -187,6 +194,12 @@ class SettingsAdvancedController(
                     "Google",
                     "AdGuard",
                     "Quad9",
+                    "AliDNS",
+                    "DNSPod",
+                    "360",
+                    "Quad 101",
+                    "Mullvad",
+                    "Control D",
                 )
                 entryValues = arrayOf(
                     "-1",
@@ -194,6 +207,12 @@ class SettingsAdvancedController(
                     PREF_DOH_GOOGLE.toString(),
                     PREF_DOH_ADGUARD.toString(),
                     PREF_DOH_QUAD9.toString(),
+                    PREF_DOH_ALIDNS.toString(),
+                    PREF_DOH_DNSPOD.toString(),
+                    PREF_DOH_360.toString(),
+                    PREF_DOH_QUAD101.toString(),
+                    PREF_DOH_MULLVAD.toString(),
+                    PREF_DOH_CONTROLD.toString(),
                 )
                 defaultValue = "-1"
                 summary = "%s"
@@ -201,6 +220,33 @@ class SettingsAdvancedController(
                 onChange {
                     activity?.toast(R.string.requires_app_restart)
                     true
+                }
+            }
+            editTextPreference {
+                key = Keys.defaultUserAgent
+                titleRes = R.string.pref_user_agent_string
+                text = preferences.defaultUserAgent().get()
+                summary = network.defaultUserAgent
+
+                onChange {
+                    if (it.toString().isBlank()) {
+                        activity?.toast(R.string.error_user_agent_string_blank)
+                        false
+                    } else {
+                        activity?.toast(R.string.requires_app_restart)
+                        true
+                    }
+                }
+            }
+            preference {
+                key = "pref_reset_user_agent"
+                titleRes = R.string.pref_reset_user_agent_string
+
+                visibleIf(preferences.defaultUserAgent()) { it != preferences.defaultUserAgent().defaultValue }
+
+                onClick {
+                    preferences.defaultUserAgent().delete()
+                    activity?.toast(R.string.requires_app_restart)
                 }
             }
         }

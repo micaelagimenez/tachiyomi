@@ -163,7 +163,7 @@
     <string name="action_remove">削除</string>
     <string name="action_install">インストール</string>
     <string name="action_undo">取り消し</string>
-    <string name="label_help">ヘルプ</string>
+    <string name="label_help">説明</string>
     <string name="action_mark_previous_as_read">前の章を既読にする</string>
     <string name="action_open_in_web_view">WebViewで開く</string>
     <string name="pref_category_reader">ビューア</string>
@@ -277,7 +277,6 @@
     <string name="update_check_notification_download_complete">タップでインストール</string>
     <string name="update_check_notification_download_error">ダウンロード中にエラー発生</string>
     <string name="update_check_notification_update_available">アップデート利用可能！</string>
-    <string name="description_cover">マンガカバー</string>
     <string name="information_no_downloads">ダウンロードがありません</string>
     <string name="information_no_recent">最近の更新はありません</string>
     <string name="information_no_recent_manga">最近に読んだ漫画がありません</string>
@@ -450,7 +449,7 @@
     <string name="recent_manga_time">第%1$s章 - %2$s</string>
     <string name="page_list_empty_error">ページが見つかりません</string>
     <string name="pref_category_for_this_series">このシリーズでは</string>
-    <string name="add_tracking">追跡サービスを追加</string>
+    <string name="add_tracking">追跡を追加</string>
     <string name="add_to_library">ライブラリに追加</string>
     <string name="sort_by_upload_date">アップロード日付順</string>
     <string name="manga_info_expand">詳細を表示</string>
@@ -599,16 +598,16 @@
     <string name="pref_dark_theme_pure_black">真っ黒モード</string>
     <string name="theme_yotsuba">四葉</string>
     <string name="theme_yinyang">陰陽</string>
-    <string name="theme_tako">タコ</string>
+    <string name="theme_tako">鮹</string>
     <string name="theme_strawberrydaiquiri">ストロベリーダイキリ</string>
     <string name="theme_midnightdusk">黄昏</string>
-    <string name="theme_greenapple">青りんご</string>
+    <string name="theme_greenapple">青林檎</string>
     <string name="pref_app_theme">アプリテーマ</string>
     <string name="action_start_downloading_now">ダウンロードを開始します</string>
     <string name="notification_updating">ライブラリを更新中... (%1$d/%2$d)</string>
     <string name="theme_monet">ダイナミック</string>
     <string name="tracker_komga_warning">このトラッカーはKomgaにのみ対応します。</string>
-    <string name="about_dont_kill_my_app">一部のスマホメーカーはバックアップグラウンドサービスを終了する追加のアプリ制限を施しています。修正する方法についてはこのWebサイトをご覧ください。</string>
+    <string name="about_dont_kill_my_app">一部のスマホメーカーはバックグラウンドサービスを終了する追加のアプリ制限を施しています。修正する方法についてはこのWebサイトをご覧ください。</string>
     <string name="label_background_activity">バックアップアクティビティ</string>
     <string name="restore_miui_warning">MIUI最適化が有効な場合はバックアップ・復元が正常に機能しない恐れがあります。</string>
     <string name="pref_lowest">最低</string>
@@ -632,7 +631,7 @@
     <string name="pref_hide_threshold">メニューを自動非表示するスクロール量</string>
     <string name="pref_category_timestamps">タイムスタンプ</string>
     <string name="pref_category_navigation">ナビゲーション</string>
-    <string name="theme_tealturquoise">青緑&amp;トルコ石</string>
+    <string name="theme_tealturquoise">青緑&amp;土耳古石</string>
     <string name="pref_category_appearance">外観</string>
     <string name="confirm_lock_change">認証を行って変更を確認してください</string>
     <string name="label_default">既定</string>
@@ -725,4 +724,18 @@
     <string name="complete_list">読了リスト</string>
     <string name="on_hold_list">後で読むリスト</string>
     <string name="cant_open_last_read_chapter">最後に読んだ章を開けませんでした</string>
+    <string name="custom_cover">カスタム表紙</string>
+    <string name="not_installed">未インストール</string>
+    <string name="pref_app_language">アプリ言語</string>
+    <string name="theme_lavender">香草色</string>
+    <string name="description_placeholder">説明がありません</string>
+    <string name="delete_category_confirmation">カテゴリー「%s」を削除しますか？</string>
+    <string name="delete_category">カテゴリーを削除</string>
+    <string name="internal_error">InternalError：詳しくはクラッシュ ログをご参照ください</string>
+    <string name="pref_user_agent_string">デフォルトのユーザーエージェント文字列</string>
+    <string name="pref_reset_user_agent_string">デフォルトのユーザーエージェント文字列をリセットする</string>
+    <string name="action_remove_everything">全て除去</string>
+    <string name="loader_rar5_error">フォーマットRARv5は未対応です</string>
+    <string name="appwidget_updates_description">最近更新されたマンガを見る</string>
+    <string name="appwidget_unavailable_locked">アプリロックがONの時、ウィジェットは利用できません</string>
 </resources>

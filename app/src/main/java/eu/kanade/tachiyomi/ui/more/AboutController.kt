@@ -1,18 +1,17 @@
 package eu.kanade.tachiyomi.ui.more
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import eu.kanade.presentation.more.about.AboutScreen
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateResult
-import eu.kanade.tachiyomi.ui.base.controller.BasicComposeController
-import eu.kanade.tachiyomi.ui.base.controller.NoAppBarElevationController
+import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.util.lang.launchNow
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import logcat.LogPriority
@@ -22,17 +21,15 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-class AboutController : BasicComposeController(), NoAppBarElevationController {
+class AboutController : BasicFullComposeController() {
 
     private val preferences: PreferencesHelper by injectLazy()
     private val updateChecker by lazy { AppUpdateChecker() }
 
-    override fun getTitle() = resources?.getString(R.string.pref_category_about)
-
     @Composable
-    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+    override fun ComposeContent() {
         AboutScreen(
-            nestedScrollInterop = nestedScrollInterop,
+            navigateUp = router::popCurrentController,
             checkVersion = this::checkVersion,
             getFormattedBuildTime = this::getFormattedBuildTime,
             onClickLicenses = { router.pushController(LicensesController()) },
@@ -47,20 +44,23 @@ class AboutController : BasicComposeController(), NoAppBarElevationController {
 
         activity!!.toast(R.string.update_check_look_for_updates)
 
-        launchNow {
-            try {
-                when (val result = updateChecker.checkForUpdate(activity!!, isUserPrompt = true)) {
-                    is AppUpdateResult.NewUpdate -> {
-                        NewUpdateDialogController(result).showDialog(router)
+        viewScope.launchIO {
+            val result = updateChecker.checkForUpdate(activity!!, isUserPrompt = true)
+            withUIContext {
+                try {
+                    when (result) {
+                        is AppUpdateResult.NewUpdate -> {
+                            NewUpdateDialogController(result).showDialog(router)
+                        }
+                        is AppUpdateResult.NoNewUpdate -> {
+                            activity?.toast(R.string.update_check_no_new_updates)
+                        }
+                        else -> {}
                     }
-                    is AppUpdateResult.NoNewUpdate -> {
-                        activity?.toast(R.string.update_check_no_new_updates)
-                    }
-                    else -> {}
+                } catch (error: Exception) {
+                    activity?.toast(error.message)
+                    logcat(LogPriority.ERROR, error)
                 }
-            } catch (error: Exception) {
-                activity?.toast(error.message)
-                logcat(LogPriority.ERROR, error)
             }
         }
     }

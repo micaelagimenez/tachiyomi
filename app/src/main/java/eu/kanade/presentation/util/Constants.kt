@@ -3,6 +3,13 @@ package eu.kanade.presentation.util
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 
-val horizontalPadding = 16.dp
+private val horizontal = 16.dp
+private val vertical = 8.dp
 
-val topPaddingValues = PaddingValues(top = 8.dp)
+val horizontalPadding = horizontal
+val verticalPadding = vertical
+
+val topPaddingValues = PaddingValues(top = vertical)
+val bottomNavPaddingValues = PaddingValues(bottom = 96.dp)
+
+const val ReadItemAlpha = .38f

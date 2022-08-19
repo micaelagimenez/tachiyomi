@@ -280,7 +280,6 @@
     <string name="update_check_notification_download_complete">Kurmak için dokunun</string>
     <string name="update_check_notification_download_error">İndirme hatası</string>
     <string name="update_check_notification_update_available">Yeni sürüm var!</string>
-    <string name="description_cover">Manganın kapağı</string>
     <string name="information_no_downloads">İndirme yok</string>
     <string name="information_no_recent">Yeni güncelleme yok</string>
     <string name="information_no_recent_manga">Yakında okunan yok</string>
@@ -737,4 +736,18 @@
     <string name="reading_list">Okuma Listesi</string>
     <string name="network_not_metered">Yalnızca kotasız ağda</string>
     <string name="cant_open_last_read_chapter">Son okunan bölüm açılamıyor</string>
+    <string name="custom_cover">Özel kapak</string>
+    <string name="not_installed">Kurulu değil</string>
+    <string name="pref_app_language">Uygulama dili</string>
+    <string name="description_placeholder">Açıklama yok</string>
+    <string name="theme_lavender">Lavanta</string>
+    <string name="delete_category">Kategoriyi sil</string>
+    <string name="delete_category_confirmation">\"%s\" kategorisini silmek istiyor musunuz\?</string>
+    <string name="internal_error">Dahili hata: Daha fazla bilgi için çökme günlüklerine bakın</string>
+    <string name="pref_user_agent_string">Öntanımlı kullanıcı aracısı dizgesi</string>
+    <string name="pref_reset_user_agent_string">Öntanımlı kullanıcı aracısı dizgesini sıfırla</string>
+    <string name="action_remove_everything">Her şeyi kaldır</string>
+    <string name="loader_rar5_error">RARv5 biçimi desteklenmiyor</string>
+    <string name="appwidget_unavailable_locked">Uygulama kilidi etkinleştirildiğinde widget kullanılamıyor</string>
+    <string name="appwidget_updates_description">Son güncellenen mangalarınızı görün</string>
 </resources>

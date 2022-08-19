@@ -240,7 +240,6 @@
     <string name="update_check_notification_download_complete">Ketik untuk memasang</string>
     <string name="update_check_notification_download_error">Ralat muat turun</string>
     <string name="update_check_notification_update_available">Versi baharu boleh didapati!</string>
-    <string name="description_cover">Muka hadapan manga</string>
     <string name="information_no_downloads">Tiada muat turun</string>
     <string name="information_no_recent">Tiada kemas kini terkini</string>
     <string name="information_no_recent_manga">Tiada bacaan setakat ini</string>
@@ -725,4 +724,18 @@
     <string name="reading_list">Senarai Bacaan</string>
     <string name="network_not_metered">Hanya pada rangkaian tidak bermeter</string>
     <string name="cant_open_last_read_chapter">Tidak dapat membuka bab yang terakhir dibaca</string>
+    <string name="custom_cover">Muka hadapan tersuai</string>
+    <string name="not_installed">Tidak dipasang</string>
+    <string name="pref_app_language">Bahasa aplikasi</string>
+    <string name="theme_lavender">Lavender</string>
+    <string name="description_placeholder">Tiada deskripsi</string>
+    <string name="delete_category_confirmation">Adakah anda ingin padam kategori \"%s\"\?</string>
+    <string name="internal_error">RalatDalam: semak log kerosakan untuk maklumat lanjut</string>
+    <string name="delete_category">Padam kategori</string>
+    <string name="pref_user_agent_string">Untaian ejen pengguna lalai</string>
+    <string name="pref_reset_user_agent_string">Set semula untaian ejen pengguna lalai</string>
+    <string name="action_remove_everything">Buang semuanya</string>
+    <string name="loader_rar5_error">Format RARv5 tidak disokong</string>
+    <string name="appwidget_unavailable_locked">Widget tidak tersedia apabila kekunci apl digunakan</string>
+    <string name="appwidget_updates_description">Lihat kemas kini manga terkini anda</string>
 </resources>

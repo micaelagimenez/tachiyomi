@@ -43,7 +43,6 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
             nestedScrollInterop = nestedScrollInterop,
             presenter = presenter,
             onClickUninstall = { presenter.uninstallExtension() },
-            onClickAppInfo = { presenter.openInSettings() },
             onClickSourcePreferences = { router.pushController(SourcePreferencesController(it)) },
             onClickSource = { presenter.toggleSource(it) },
         )
@@ -108,9 +107,13 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
     }
 
     private fun createUrl(url: String, pkgName: String, pkgFactory: String?, path: String = ""): String {
-        return when {
-            !pkgFactory.isNullOrEmpty() -> "$url/multisrc/src/main/java/eu/kanade/tachiyomi/multisrc/$pkgFactory$path"
-            else -> "$url/src/${pkgName.replace(".", "/")}$path"
+        return if (!pkgFactory.isNullOrEmpty()) {
+            when (path.isEmpty()) {
+                true -> "$url/multisrc/src/main/java/eu/kanade/tachiyomi/multisrc/$pkgFactory"
+                else -> "$url/multisrc/overrides/$pkgFactory/" + (pkgName.split(".").lastOrNull() ?: "") + path
+            }
+        } else {
+            url + "/src/" + pkgName.replace(".", "/") + path
         }
     }
 

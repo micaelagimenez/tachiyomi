@@ -46,7 +46,7 @@ class WebtoonTransitionHolder(
         layout.orientation = LinearLayout.VERTICAL
         layout.gravity = Gravity.CENTER
 
-        val paddingVertical = 48.dpToPx
+        val paddingVertical = 128.dpToPx
         val paddingHorizontal = 32.dpToPx
         layout.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical)
 
@@ -63,7 +63,7 @@ class WebtoonTransitionHolder(
      * Binds the given [transition] with this view holder, subscribing to its state.
      */
     fun bind(transition: ChapterTransition) {
-        transitionView.bind(transition)
+        transitionView.bind(transition, viewer.downloadManager, viewer.activity.presenter.manga)
 
         transition.to?.let { observeStatus(it, transition) }
     }

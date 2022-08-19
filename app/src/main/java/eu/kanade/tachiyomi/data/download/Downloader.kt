@@ -1,14 +1,13 @@
 package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
-import android.webkit.MimeTypeMap
 import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.download.model.DownloadQueue
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
@@ -252,7 +251,7 @@ class Downloader(
         val chaptersWithoutDir = async {
             chapters
                 // Filter out those already downloaded.
-                .filter { provider.findChapterDir(it, manga, source) == null }
+                .filter { provider.findChapterDir(it.name, it.scanlator, manga.title, source) == null }
                 // Add chapters to queue from the start.
                 .sortedByDescending { it.source_order }
         }
@@ -278,7 +277,8 @@ class Downloader(
                 val maxDownloadsFromSource = queue
                     .groupBy { it.source }
                     .filterKeys { it !is UnmeteredSource }
-                    .maxOf { it.value.size }
+                    .maxOfOrNull { it.value.size }
+                    ?: 0
                 if (
                     queuedDownloads > DOWNLOADS_QUEUED_WARNING_THRESHOLD ||
                     maxDownloadsFromSource > CHAPTERS_PER_SOURCE_QUEUE_WARNING_THRESHOLD
@@ -302,7 +302,7 @@ class Downloader(
      * @param download the chapter to be downloaded.
      */
     private fun downloadChapter(download: Download): Observable<Download> = Observable.defer {
-        val mangaDir = provider.getMangaDir(download.manga, download.source)
+        val mangaDir = provider.getMangaDir(download.manga.title, download.source)
 
         val availSpace = DiskUtil.getAvailableStorageSpace(mangaDir)
         if (availSpace != -1L && availSpace < MIN_DISK_SPACE) {
@@ -311,7 +311,7 @@ class Downloader(
             return@defer Observable.just(download)
         }
 
-        val chapterDirname = provider.getChapterDirName(download.chapter)
+        val chapterDirname = provider.getChapterDirName(download.chapter.name, download.chapter.scanlator)
         val tmpDir = mangaDir.createDirectory(chapterDirname + TMP_DIR_SUFFIX)
 
         val pageListObservable = if (download.pages == null) {
@@ -341,8 +341,8 @@ class Downloader(
             // Get all the URLs to the source images, fetch pages if necessary
             .flatMap { download.source.fetchAllImageUrlsFromPageList(it) }
             // Start downloading images, consider we can have downloaded images already
-            // Concurrently do 5 pages at a time
-            .flatMap({ page -> getOrDownloadImage(page, download, tmpDir) }, 5)
+            // Concurrently do 2 pages at a time
+            .flatMap({ page -> getOrDownloadImage(page, download, tmpDir).subscribeOn(Schedulers.io()) }, 2)
             .onBackpressureLatest()
             // Do when page is downloaded.
             .doOnNext { notifier.onProgressChange(download) }
@@ -471,13 +471,13 @@ class Downloader(
      */
     private fun getImageExtension(response: Response, file: UniFile): String {
         // Read content type if available.
-        val mime = response.body?.contentType()?.let { ct -> "${ct.type}/${ct.subtype}" }
+        val mime = response.body?.contentType()?.run { if (type == "image") "image/$subtype" else null }
             // Else guess from the uri.
             ?: context.contentResolver.getType(file.uri)
             // Else read magic numbers.
             ?: ImageUtil.findImageType { file.openInputStream() }?.mime
 
-        return MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "jpg"
+        return ImageUtil.getExtensionFromMimeType(mime)
     }
 
     private fun splitTallImageIfNeeded(page: Page, tmpDir: UniFile): Boolean {
@@ -492,7 +492,12 @@ class Downloader(
         // check if the original page was previously splitted before then skip.
         if (imageFile.name!!.contains("__")) return true
 
-        return ImageUtil.splitTallImage(imageFile, imageFilePath)
+        return try {
+            ImageUtil.splitTallImage(imageFile, imageFilePath)
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            false
+        }
     }
 
     /**

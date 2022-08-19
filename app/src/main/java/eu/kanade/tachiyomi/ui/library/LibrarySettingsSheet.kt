@@ -4,18 +4,23 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import com.bluelinelabs.conductor.Router
+import eu.kanade.domain.category.interactor.SetDisplayModeForCategory
+import eu.kanade.domain.category.interactor.SetSortModeForCategory
+import eu.kanade.domain.category.model.Category
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
 import eu.kanade.tachiyomi.widget.sheet.TabbedBottomSheetDialog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -23,13 +28,16 @@ import uy.kohesive.injekt.injectLazy
 class LibrarySettingsSheet(
     router: Router,
     private val trackManager: TrackManager = Injekt.get(),
+    private val setDisplayModeForCategory: SetDisplayModeForCategory = Injekt.get(),
+    private val setSortModeForCategory: SetSortModeForCategory = Injekt.get(),
     onGroupClickListener: (ExtendedNavigationView.Group) -> Unit,
 ) : TabbedBottomSheetDialog(router.activity!!) {
 
     val filters: Filter
     private val sort: Sort
     private val display: Display
-    private val db: DatabaseHelper by injectLazy()
+
+    val sheetScope = CoroutineScope(Job() + Dispatchers.IO)
 
     init {
         filters = Filter(router.activity!!)
@@ -91,7 +99,7 @@ class LibrarySettingsSheet(
             private val unread = Item.TriStateGroup(R.string.action_filter_unread, this)
             private val started = Item.TriStateGroup(R.string.action_filter_started, this)
             private val completed = Item.TriStateGroup(R.string.completed, this)
-            private val trackFilters: Map<Int, Item.TriStateGroup>
+            private val trackFilters: Map<Long, Item.TriStateGroup>
 
             override val header = null
             override val items: List<Item>
@@ -127,7 +135,7 @@ class LibrarySettingsSheet(
                 completed.state = preferences.filterCompleted().get()
 
                 trackFilters.forEach { trackFilter ->
-                    trackFilter.value.state = preferences.filterTracking(trackFilter.key).get()
+                    trackFilter.value.state = preferences.filterTracking(trackFilter.key.toInt()).get()
                 }
             }
 
@@ -148,7 +156,7 @@ class LibrarySettingsSheet(
                     else -> {
                         trackFilters.forEach { trackFilter ->
                             if (trackFilter.value == item) {
-                                preferences.filterTracking(trackFilter.key).set(newState)
+                                preferences.filterTracking(trackFilter.key.toInt()).set(newState)
                             }
                         }
                     }
@@ -236,24 +244,20 @@ class LibrarySettingsSheet(
 
                 setSortModePreference(item)
 
-                setSortDirectionPrefernece(item)
+                setSortDirectionPreference(item)
 
                 item.group.items.forEach { adapter.notifyItemChanged(it) }
             }
 
-            private fun setSortDirectionPrefernece(item: Item.MultiStateGroup) {
+            private fun setSortDirectionPreference(item: Item.MultiStateGroup) {
                 val flag = if (item.state == Item.MultiSort.SORT_ASC) {
                     SortDirectionSetting.ASCENDING
                 } else {
                     SortDirectionSetting.DESCENDING
                 }
 
-                if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0) {
-                    currentCategory?.sortDirection = flag.flag
-
-                    db.insertCategory(currentCategory!!).executeAsBlocking()
-                } else {
-                    preferences.librarySortingAscending().set(flag)
+                sheetScope.launchIO {
+                    setSortModeForCategory.await(currentCategory!!, flag)
                 }
             }
 
@@ -270,12 +274,8 @@ class LibrarySettingsSheet(
                     else -> throw NotImplementedError("Unknown display mode")
                 }
 
-                if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0) {
-                    currentCategory?.sortMode = flag.flag
-
-                    db.insertCategory(currentCategory!!).executeAsBlocking()
-                } else {
-                    preferences.librarySortingMode().set(flag)
+                sheetScope.launchIO {
+                    setSortModeForCategory.await(currentCategory!!, flag)
                 }
             }
         }
@@ -307,8 +307,8 @@ class LibrarySettingsSheet(
 
         // Gets user preference of currently selected display mode at current category
         private fun getDisplayModePreference(): DisplayModeSetting {
-            return if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0) {
-                DisplayModeSetting.fromFlag(currentCategory?.displayMode)
+            return if (currentCategory != null && preferences.categorizedDisplaySettings().get()) {
+                DisplayModeSetting.fromFlag(currentCategory!!.displayMode)
             } else {
                 preferences.libraryDisplayMode().get()
             }
@@ -359,12 +359,8 @@ class LibrarySettingsSheet(
                     else -> throw NotImplementedError("Unknown display mode")
                 }
 
-                if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0) {
-                    currentCategory?.displayMode = flag.flag
-
-                    db.insertCategory(currentCategory!!).executeAsBlocking()
-                } else {
-                    preferences.libraryDisplayMode().set(flag)
+                sheetScope.launchIO {
+                    setDisplayModeForCategory.await(currentCategory!!, flag)
                 }
             }
         }

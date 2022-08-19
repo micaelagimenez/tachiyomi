@@ -288,7 +288,6 @@
     <string name="update_check_notification_download_complete">Πατήστε για εγκατάσταση</string>
     <string name="update_check_notification_download_error">Σφάλμα λήψης</string>
     <string name="update_check_notification_update_available">Υπάρχει διαθέσιμη ενημέρωση!</string>
-    <string name="description_cover">Εξώφυλλο manga</string>
     <string name="information_no_downloads">Δεν υπάρχουν λήψεις</string>
     <string name="information_no_recent">Δεν υπάρχουν πρόσφατες ενημερώσεις</string>
     <string name="information_no_recent_manga">Τίποτα δεν διαβάστηκε πρόσφατα</string>
@@ -737,4 +736,18 @@
     <string name="reading_list">Λίστα ανάγνωσης</string>
     <string name="network_not_metered">Μόνο σε δίκτυο χωρίς μετρήσεις</string>
     <string name="cant_open_last_read_chapter">Αδυναμία ανοίγματος του τελευταίου κεφαλαίου που διαβάστηκε</string>
+    <string name="custom_cover">Προσαρμοσμένο εξώφυλλο</string>
+    <string name="not_installed">Δεν έχει εγκατασταθεί</string>
+    <string name="pref_app_language">Γλώσσα εφαρμογής</string>
+    <string name="theme_lavender">Λεβάντα</string>
+    <string name="description_placeholder">Χωρίς περιγραφή</string>
+    <string name="delete_category">Διαγραφή κατηγορίας</string>
+    <string name="delete_category_confirmation">Θέλετε να διαγράψετε την κατηγορία \"%s\";</string>
+    <string name="internal_error">InternalError: Ελέγξτε τα αρχεία καταγραφής σφαλμάτων για περισσότερες πληροφορίες</string>
+    <string name="pref_user_agent_string">Προεπιλεγμένη συμβολοσειρά πράκτορα χρήστη</string>
+    <string name="pref_reset_user_agent_string">Επαναφορά προεπιλεγμένης συμβολοσειράς πράκτορα χρήστη</string>
+    <string name="action_remove_everything">Καταργήστε τα πάντα</string>
+    <string name="loader_rar5_error">Η μορφή RARv5 δεν υποστηρίζεται</string>
+    <string name="appwidget_updates_description">Δείτε τα πρόσφατα ενημερωμένα manga σας</string>
+    <string name="appwidget_unavailable_locked">Το widget δεν είναι διαθέσιμο όταν είναι ενεργοποιημένο το κλείδωμα εφαρμογών</string>
 </resources>

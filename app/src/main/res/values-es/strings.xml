@@ -193,7 +193,6 @@
     <string name="update_check_notification_download_error">Error de descarga</string>
     <string name="update_check_notification_update_available">¡Nueva versión disponible!</string>
     <!--Content Description-->
-    <string name="description_cover">Portada del manga</string>
     <!-- Information Text -->
     <string name="information_no_downloads">No hay descargas</string>
     <string name="information_no_recent">No hay actualizaciones recientes</string>
@@ -283,7 +282,7 @@
     <string name="action_global_search_hint">Búsqueda global…</string>
     <string name="latest">Recientes</string>
     <string name="browse">Explorar</string>
-    <string name="channel_common">Común</string>
+    <string name="channel_common">Comunes</string>
     <string name="information_empty_category">No hay categorías. Pulsa el botón «+» para crear una y organizar tu biblioteca.</string>
     <string name="label_migration">Migrar</string>
     <string name="label_extensions">Extensiones</string>
@@ -382,7 +381,7 @@
     <string name="pref_cutout_short">Mostrar contenido en el área recortada</string>
     <string name="information_cloudflare_bypass_failure">Fallo al evitar Cloudflare</string>
     <string name="information_webview_outdated">Actualiza la aplicación WebView para mejorar la compatibilidad</string>
-    <string name="channel_new_chapters">Capítulos actualizados</string>
+    <string name="channel_new_chapters">Nuevos capítulos</string>
     <string name="unlock_app">Desbloquear Tachiyomi</string>
     <string name="secure_screen_summary">Pantalla segura oculta el contenido al cambiar de aplicación y bloquea las capturas de pantalla</string>
     <string name="pref_category_display">Visualización</string>
@@ -421,7 +420,7 @@
     <string name="updating_library">Actualizando biblioteca</string>
     <string name="http_error_hint">Abrir sitio en WebView</string>
     <string name="pref_enable_automatic_extension_updates">Buscar actualizaciones de extensiones</string>
-    <string name="channel_ext_updates">Actualizaciones de extensión</string>
+    <string name="channel_ext_updates">Actualizaciones de extensiones</string>
     <string name="pref_skip_filtered_chapters">Saltar capítulos excluidos por filtros</string>
     <string name="pref_category_reading">Lectura</string>
     <string name="label_sources">Fuentes</string>
@@ -529,9 +528,9 @@
     </plurals>
     <string name="no_pinned_sources">Todavía no has anclado ninguna fuente</string>
     <string name="download_notifier_download_finish">Descarga completada</string>
-    <string name="channel_complete">Completo</string>
-    <string name="channel_progress">Progreso</string>
-    <string name="channel_errors">Errores</string>
+    <string name="channel_complete">Terminadas</string>
+    <string name="channel_progress">En progreso</string>
+    <string name="channel_errors">Con errores</string>
     <string name="backup_restore_missing_trackers">Servicios de seguimiento sin conectar:</string>
     <string name="pref_remove_bookmarked_chapters">Permitir el borrado de capítulos marcados como favoritos</string>
     <string name="pref_category_delete_chapters">Borrar capítulos</string>
@@ -747,8 +746,8 @@
     <string name="source_filter_empty_screen">No se ha instalado ninguna fuente</string>
     <string name="source_empty_screen">No se ha encontrado ninguna fuente</string>
     <string name="action_sort_last_manga_update">Última actualización de manga</string>
-    <string name="action_sort_unread_count">Recuento no leído</string>
-    <string name="split_tall_images">Dividir automaticamente imágenes demasiado altas</string>
+    <string name="action_sort_unread_count">Capítulos restantes</string>
+    <string name="split_tall_images">Dividir automáticamente imágenes demasiado altas</string>
     <string name="split_tall_images_summary">Mejora el rendimiento del lector dividiendo páginas descargadas mucho más altas que anchas.</string>
     <string name="download_notifier_split_page_not_found">No se ha encontrado la página %d al dividir</string>
     <string name="download_notifier_split_page_path_not_found">La ruta al archivo de la página %d no se encuentra</string>
@@ -768,4 +767,18 @@
     <string name="unfinished_list">Sin terminar</string>
     <string name="network_not_metered">Solo en conexiones no medidas</string>
     <string name="cant_open_last_read_chapter">No se pudo abrir el último capítulo leído</string>
+    <string name="custom_cover">Portada personalizada</string>
+    <string name="not_installed">Sin instalar</string>
+    <string name="pref_app_language">Idioma de la aplicación</string>
+    <string name="theme_lavender">Lavanda</string>
+    <string name="description_placeholder">Sin descripción</string>
+    <string name="delete_category">Borrar categoría</string>
+    <string name="delete_category_confirmation">¿Quieres borrar la categoría «%s»\?</string>
+    <string name="internal_error">ErrorInterno: Mira el registro de depuración para más información</string>
+    <string name="pref_user_agent_string">Nombre del navegador a usar («user agent»)</string>
+    <string name="pref_reset_user_agent_string">Restablecer el nombre del navegador («user agent»)</string>
+    <string name="action_remove_everything">Quitar todo</string>
+    <string name="loader_rar5_error">El formato RARv5 no se entiende</string>
+    <string name="appwidget_updates_description">Ver el manga actualizado de forma reciente</string>
+    <string name="appwidget_unavailable_locked">El widget no está disponible cuando el bloqueo de aplicación está activo</string>
 </resources>

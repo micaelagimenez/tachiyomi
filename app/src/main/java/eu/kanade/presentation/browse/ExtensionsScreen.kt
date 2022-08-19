@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,16 +39,18 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import eu.kanade.presentation.browse.components.BaseBrowseItem
 import eu.kanade.presentation.browse.components.ExtensionIcon
-import eu.kanade.presentation.components.ScrollbarLazyColumn
+import eu.kanade.presentation.components.EmptyScreen
+import eu.kanade.presentation.components.FastScrollLazyColumn
+import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.SwipeRefreshIndicator
 import eu.kanade.presentation.theme.header
+import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
-import eu.kanade.tachiyomi.ui.browse.extension.ExtensionState
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionUiModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsPresenter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
@@ -69,19 +70,18 @@ fun ExtensionScreen(
     onRefresh: () -> Unit,
     onLaunched: () -> Unit,
 ) {
-    val state by presenter.state.collectAsState()
-    val isRefreshing = presenter.isRefreshing
-
     SwipeRefresh(
         modifier = Modifier.nestedScroll(nestedScrollInterop),
-        state = rememberSwipeRefreshState(isRefreshing),
+        state = rememberSwipeRefreshState(presenter.isRefreshing),
         indicator = { s, trigger -> SwipeRefreshIndicator(s, trigger) },
         onRefresh = onRefresh,
     ) {
-        when (state) {
-            is ExtensionState.Initialized -> {
+        when {
+            presenter.isLoading -> LoadingScreen()
+            presenter.isEmpty -> EmptyScreen(R.string.empty_screen)
+            else -> {
                 ExtensionContent(
-                    items = (state as ExtensionState.Initialized).list,
+                    state = presenter,
                     onLongClickItem = onLongClickItem,
                     onClickItemCancel = onClickItemCancel,
                     onInstallExtension = onInstallExtension,
@@ -93,14 +93,13 @@ fun ExtensionScreen(
                     onLaunched = onLaunched,
                 )
             }
-            ExtensionState.Uninitialized -> {}
         }
     }
 }
 
 @Composable
 fun ExtensionContent(
-    items: List<ExtensionUiModel>,
+    state: ExtensionsState,
     onLongClickItem: (Extension) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
     onInstallExtension: (Extension.Available) -> Unit,
@@ -113,11 +112,11 @@ fun ExtensionContent(
 ) {
     var trustState by remember { mutableStateOf<Extension.Untrusted?>(null) }
 
-    ScrollbarLazyColumn(
-        contentPadding = WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+    FastScrollLazyColumn(
+        contentPadding = bottomNavPaddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(
-            items = items,
+            items = state.items,
             key = {
                 when (it) {
                     is ExtensionUiModel.Header.Resource -> it.textRes
@@ -168,13 +167,7 @@ fun ExtensionContent(
                         onClickItem = {
                             when (it) {
                                 is Extension.Available -> onInstallExtension(it)
-                                is Extension.Installed -> {
-                                    if (it.hasUpdate) {
-                                        onUpdateExtension(it)
-                                    } else {
-                                        onOpenExtension(it)
-                                    }
-                                }
+                                is Extension.Installed -> onOpenExtension(it)
                                 is Extension.Untrusted -> { trustState = it }
                             }
                         },
@@ -299,7 +292,9 @@ fun ExtensionItemContent(
 
             if (warning != null) {
                 Text(
-                    text = stringResource(id = warning).uppercase(),
+                    text = stringResource(warning).uppercase(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.error,
                     ),
@@ -370,7 +365,7 @@ fun ExtensionHeader(
     action: @Composable RowScope.() -> Unit = {},
 ) {
     ExtensionHeader(
-        text = stringResource(id = textRes),
+        text = stringResource(textRes),
         modifier = modifier,
         action = action,
     )

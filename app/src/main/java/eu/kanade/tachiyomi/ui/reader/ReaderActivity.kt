@@ -30,7 +30,7 @@ import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.graphics.ColorUtils
-import androidx.core.transition.addListener
+import androidx.core.transition.doOnEnd
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -46,7 +46,6 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -104,10 +103,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 putExtra("chapter", chapterId)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
-        }
-
-        fun newIntent(context: Context, manga: Manga, chapter: Chapter): Intent {
-            return newIntent(context, manga.id, chapter.id)
         }
 
         private const val ENABLED_BUTTON_IMAGE_ALPHA = 255
@@ -366,15 +361,16 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         }
 
         // Init listeners on bottom menu
-        binding.pageSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
-            override fun onStartTrackingTouch(slider: Slider) {
-                isScrollingThroughPages = true
-            }
+        binding.pageSlider.addOnSliderTouchListener(
+            object : Slider.OnSliderTouchListener {
+                override fun onStartTrackingTouch(slider: Slider) {
+                    isScrollingThroughPages = true
+                }
 
-            override fun onStopTrackingTouch(slider: Slider) {
-                isScrollingThroughPages = false
-            }
-        },
+                override fun onStopTrackingTouch(slider: Slider) {
+                    isScrollingThroughPages = false
+                }
+            },
         )
         binding.pageSlider.addOnChangeListener { slider, value, fromUser ->
             if (viewer != null && fromUser) {
@@ -621,9 +617,9 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         updateCropBordersShortcut()
         if (window.sharedElementEnterTransition is MaterialContainerTransform) {
             // Wait until transition is complete to avoid crash on API 26
-            window.sharedElementEnterTransition.addListener(
-                onEnd = { setOrientation(presenter.getMangaOrientationType()) },
-            )
+            window.sharedElementEnterTransition.doOnEnd {
+                setOrientation(presenter.getMangaOrientationType())
+            }
         } else {
             setOrientation(presenter.getMangaOrientationType())
         }
@@ -877,7 +873,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
      * cover to the presenter.
      */
     fun setAsCover(page: ReaderPage) {
-        presenter.setAsCover(page)
+        presenter.setAsCover(this, page)
     }
 
     /**

@@ -2,25 +2,31 @@ package eu.kanade.tachiyomi.ui.browse.migration.search
 
 import android.os.Bundle
 import com.jakewharton.rxrelay.BehaviorRelay
+import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.interactor.SetMangaCategories
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.chapter.interactor.UpdateChapter
+import eu.kanade.domain.chapter.model.toChapterUpdate
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.MangaUpdate
+import eu.kanade.domain.manga.model.hasCustomCover
+import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.track.interactor.GetTracks
+import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.MangaCategory
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchCardItem
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchItem
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.hasCustomCover
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import uy.kohesive.injekt.Injekt
@@ -31,6 +37,14 @@ import java.util.Date
 class SearchPresenter(
     initialQuery: String? = "",
     private val manga: Manga,
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val updateChapter: UpdateChapter = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
+    private val getCategories: GetCategories = Injekt.get(),
+    private val getTracks: GetTracks = Injekt.get(),
+    private val insertTrack: InsertTrack = Injekt.get(),
+    private val setMangaCategories: SetMangaCategories = Injekt.get(),
 ) : GlobalSearchPresenter(initialQuery) {
 
     private val replacingMangaRelay = BehaviorRelay.create<Pair<Boolean, Manga?>>()
@@ -58,7 +72,7 @@ class SearchPresenter(
         return GlobalSearchItem(source, results, source.id == manga.source)
     }
 
-    override fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
+    override fun networkToLocalManga(sManga: SManga, sourceId: Long): eu.kanade.tachiyomi.data.database.models.Manga {
         val localManga = super.networkToLocalManga(sManga, sourceId)
         // For migration, displayed title should always match source rather than local DB
         localManga.title = sManga.title
@@ -73,19 +87,18 @@ class SearchPresenter(
 
         presenterScope.launchIO {
             try {
-                val chapters = source.getChapterList(manga.toMangaInfo())
-                    .map { it.toSChapter() }
+                val chapters = source.getChapterList(manga.toSManga())
 
                 migrateMangaInternal(prevSource, source, chapters, prevManga, manga, replace)
             } catch (e: Throwable) {
                 withUIContext { view?.applicationContext?.toast(e.message) }
             }
 
-            presenterScope.launchUI { replacingMangaRelay.call(Pair(false, manga)) }
+            withUIContext { replacingMangaRelay.call(Pair(false, manga)) }
         }
     }
 
-    private fun migrateMangaInternal(
+    private suspend fun migrateMangaInternal(
         prevSource: Source?,
         source: Source,
         sourceChapters: List<SChapter>,
@@ -94,101 +107,90 @@ class SearchPresenter(
         replace: Boolean,
     ) {
         val flags = preferences.migrateFlags().get()
-        val migrateChapters =
-            MigrationFlags.hasChapters(
-                flags,
-            )
-        val migrateCategories =
-            MigrationFlags.hasCategories(
-                flags,
-            )
-        val migrateTracks =
-            MigrationFlags.hasTracks(
-                flags,
-            )
-        val migrateCustomCover =
-            MigrationFlags.hasCustomCover(
-                flags,
-            )
 
-        db.inTransaction {
-            // Update chapters read
-            if (migrateChapters) {
-                try {
-                    syncChaptersWithSource(db, sourceChapters, manga, source)
-                } catch (e: Exception) {
-                    // Worst case, chapters won't be synced
-                }
+        val migrateChapters = MigrationFlags.hasChapters(flags)
+        val migrateCategories = MigrationFlags.hasCategories(flags)
+        val migrateTracks = MigrationFlags.hasTracks(flags)
+        val migrateCustomCover = MigrationFlags.hasCustomCover(flags)
 
-                val prevMangaChapters = db.getChapters(prevManga).executeAsBlocking()
-                val maxChapterRead = prevMangaChapters
-                    .filter { it.read }
-                    .maxOfOrNull { it.chapter_number } ?: 0f
-                val dbChapters = db.getChapters(manga).executeAsBlocking()
-                for (chapter in dbChapters) {
-                    if (chapter.isRecognizedNumber) {
-                        val prevChapter = prevMangaChapters
-                            .find { it.isRecognizedNumber && it.chapter_number == chapter.chapter_number }
-                        if (prevChapter != null) {
-                            chapter.date_fetch = prevChapter.date_fetch
-                            chapter.bookmark = prevChapter.bookmark
-                        }
-                        if (chapter.chapter_number <= maxChapterRead) {
-                            chapter.read = true
-                        }
+        try {
+            syncChaptersWithSource.await(sourceChapters, manga, source)
+        } catch (e: Exception) {
+            // Worst case, chapters won't be synced
+        }
+
+        // Update chapters read, bookmark and dateFetch
+        if (migrateChapters) {
+            val prevMangaChapters = getChapterByMangaId.await(prevManga.id)
+            val mangaChapters = getChapterByMangaId.await(manga.id)
+
+            val maxChapterRead = prevMangaChapters
+                .filter { it.read }
+                .maxOfOrNull { it.chapterNumber }
+
+            val updatedMangaChapters = mangaChapters.map { mangaChapter ->
+                var updatedChapter = mangaChapter
+                if (updatedChapter.isRecognizedNumber) {
+                    val prevChapter = prevMangaChapters
+                        .find { it.isRecognizedNumber && it.chapterNumber == updatedChapter.chapterNumber }
+
+                    if (prevChapter != null) {
+                        updatedChapter = updatedChapter.copy(
+                            dateFetch = prevChapter.dateFetch,
+                            bookmark = prevChapter.bookmark,
+                        )
+                    }
+
+                    if (maxChapterRead != null && updatedChapter.chapterNumber <= maxChapterRead) {
+                        updatedChapter = updatedChapter.copy(read = true)
                     }
                 }
-                db.insertChapters(dbChapters).executeAsBlocking()
+
+                updatedChapter
             }
 
-            // Update categories
-            if (migrateCategories) {
-                val categories = db.getCategoriesForManga(prevManga).executeAsBlocking()
-                val mangaCategories = categories.map { MangaCategory.create(manga, it) }
-                db.setMangaCategories(mangaCategories, listOf(manga))
-            }
-
-            // Update track
-            if (migrateTracks) {
-                val tracksToUpdate = db.getTracks(prevManga.id).executeAsBlocking().mapNotNull { track ->
-                    track.id = null
-                    track.manga_id = manga.id!!
-
-                    val service = enhancedServices
-                        .firstOrNull { it.isTrackFrom(track, prevManga, prevSource) }
-                    if (service != null) service.migrateTrack(track, manga, source)
-                    else track
-                }
-                db.insertTracks(tracksToUpdate).executeAsBlocking()
-            }
-
-            // Update favorite status
-            if (replace) {
-                prevManga.favorite = false
-                db.updateMangaFavorite(prevManga).executeAsBlocking()
-            }
-            manga.favorite = true
-
-            // Update reading preferences
-            manga.chapter_flags = prevManga.chapter_flags
-            manga.viewer_flags = prevManga.viewer_flags
-
-            // Update date added
-            if (replace) {
-                manga.date_added = prevManga.date_added
-                prevManga.date_added = 0
-            } else {
-                manga.date_added = Date().time
-            }
-
-            // Update custom cover
-            if (migrateCustomCover) {
-                coverCache.setCustomCoverToCache(manga, coverCache.getCustomCoverFile(prevManga.id).inputStream())
-            }
-
-            // SearchPresenter#networkToLocalManga may have updated the manga title,
-            // so ensure db gets updated title too
-            db.insertManga(manga).executeAsBlocking()
+            val chapterUpdates = updatedMangaChapters.map { it.toChapterUpdate() }
+            updateChapter.awaitAll(chapterUpdates)
         }
+
+        // Update categories
+        if (migrateCategories) {
+            val categoryIds = getCategories.await(prevManga.id).map { it.id }
+            setMangaCategories.await(manga.id, categoryIds)
+        }
+
+        // Update track
+        if (migrateTracks) {
+            val tracks = getTracks.await(prevManga.id).mapNotNull { track ->
+                val updatedTrack = track.copy(mangaId = manga.id)
+
+                val service = enhancedServices
+                    .firstOrNull { it.isTrackFrom(updatedTrack, prevManga, prevSource) }
+
+                if (service != null) service.migrateTrack(updatedTrack, manga, source)
+                else updatedTrack
+            }
+            insertTrack.awaitAll(tracks)
+        }
+
+        if (replace) {
+            updateManga.await(MangaUpdate(prevManga.id, favorite = false, dateAdded = 0))
+        }
+
+        // Update custom cover (recheck if custom cover exists)
+        if (migrateCustomCover && prevManga.hasCustomCover()) {
+            @Suppress("BlockingMethodInNonBlockingContext")
+            coverCache.setCustomCoverToCache(manga.toDbManga(), coverCache.getCustomCoverFile(prevManga.id).inputStream())
+        }
+
+        updateManga.await(
+            MangaUpdate(
+                id = manga.id,
+                favorite = true,
+                chapterFlags = prevManga.chapterFlags,
+                viewerFlags = prevManga.viewerFlags,
+                dateAdded = if (replace) prevManga.dateAdded else Date().time,
+            ),
+        )
     }
 }

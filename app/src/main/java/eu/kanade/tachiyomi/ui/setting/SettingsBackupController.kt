@@ -21,9 +21,9 @@ import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupConst
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
+import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
-import eu.kanade.tachiyomi.data.backup.full.FullBackupRestoreValidator
-import eu.kanade.tachiyomi.data.backup.full.models.BackupFull
+import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.util.preference.bindTo
@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.DeviceUtil
+import eu.kanade.tachiyomi.util.system.getParcelableCompat
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.launchIn
@@ -206,11 +207,10 @@ class SettingsBackupController : SettingsController() {
     fun createBackup(flags: Int) {
         backupFlags = flags
         try {
-            // Use Android's built-in file creator
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE)
                 .setType("application/*")
-                .putExtra(Intent.EXTRA_TITLE, BackupFull.getDefaultFilename())
+                .putExtra(Intent.EXTRA_TITLE, Backup.getBackupFilename())
 
             startActivityForResult(intent, CODE_BACKUP_CREATE)
         } catch (e: ActivityNotFoundException) {
@@ -267,10 +267,10 @@ class SettingsBackupController : SettingsController() {
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val activity = activity!!
-            val uri: Uri = args.getParcelable(KEY_URI)!!
+            val uri = args.getParcelableCompat<Uri>(KEY_URI)!!
 
             return try {
-                val results = FullBackupRestoreValidator().validate(activity, uri)
+                val results = BackupFileValidator().validate(activity, uri)
 
                 var message = activity.getString(R.string.backup_restore_content_full)
                 if (results.missingSources.isNotEmpty()) {

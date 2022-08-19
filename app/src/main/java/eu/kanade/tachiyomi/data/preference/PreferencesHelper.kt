@@ -24,6 +24,7 @@ import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+import eu.kanade.domain.manga.model.Manga as DomainManga
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 
@@ -52,7 +53,7 @@ class PreferencesHelper(val context: Context) {
 
     fun lockAppAfter() = flowPrefs.getInt("lock_app_after", 0)
 
-    fun lastAppUnlock() = flowPrefs.getLong("last_app_unlock", 0)
+    fun lastAppClosed() = flowPrefs.getLong("last_app_closed", 0)
 
     fun secureScreen() = flowPrefs.getEnum("secure_screen_v2", Values.SecureScreenMode.INCOGNITO)
 
@@ -293,19 +294,21 @@ class PreferencesHelper(val context: Context) {
 
     fun dohProvider() = prefs.getInt(Keys.dohProvider, -1)
 
+    fun defaultUserAgent() = flowPrefs.getString(Keys.defaultUserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:103.0) Gecko/20100101 Firefox/103.0")
+
     fun lastSearchQuerySearchSettings() = flowPrefs.getString("last_search_query", "")
 
-    fun filterChapterByRead() = prefs.getInt(Keys.defaultChapterFilterByRead, Manga.SHOW_ALL)
+    fun filterChapterByRead() = prefs.getInt(Keys.defaultChapterFilterByRead, DomainManga.SHOW_ALL.toInt())
 
-    fun filterChapterByDownloaded() = prefs.getInt(Keys.defaultChapterFilterByDownloaded, Manga.SHOW_ALL)
+    fun filterChapterByDownloaded() = prefs.getInt(Keys.defaultChapterFilterByDownloaded, DomainManga.SHOW_ALL.toInt())
 
-    fun filterChapterByBookmarked() = prefs.getInt(Keys.defaultChapterFilterByBookmarked, Manga.SHOW_ALL)
+    fun filterChapterByBookmarked() = prefs.getInt(Keys.defaultChapterFilterByBookmarked, DomainManga.SHOW_ALL.toInt())
 
-    fun sortChapterBySourceOrNumber() = prefs.getInt(Keys.defaultChapterSortBySourceOrNumber, Manga.CHAPTER_SORTING_SOURCE)
+    fun sortChapterBySourceOrNumber() = prefs.getInt(Keys.defaultChapterSortBySourceOrNumber, DomainManga.CHAPTER_SORTING_SOURCE.toInt())
 
-    fun displayChapterByNameOrNumber() = prefs.getInt(Keys.defaultChapterDisplayByNameOrNumber, Manga.CHAPTER_DISPLAY_NAME)
+    fun displayChapterByNameOrNumber() = prefs.getInt(Keys.defaultChapterDisplayByNameOrNumber, DomainManga.CHAPTER_DISPLAY_NAME.toInt())
 
-    fun sortChapterByAscendingOrDescending() = prefs.getInt(Keys.defaultChapterSortByAscendingOrDescending, Manga.CHAPTER_SORT_DESC)
+    fun sortChapterByAscendingOrDescending() = prefs.getInt(Keys.defaultChapterSortByAscendingOrDescending, DomainManga.CHAPTER_SORT_DESC.toInt())
 
     fun incognitoMode() = flowPrefs.getBoolean("incognito_mode", false)
 
@@ -329,7 +332,7 @@ class PreferencesHelper(val context: Context) {
             putInt(Keys.defaultChapterFilterByBookmarked, manga.bookmarkedFilter)
             putInt(Keys.defaultChapterSortBySourceOrNumber, manga.sorting)
             putInt(Keys.defaultChapterDisplayByNameOrNumber, manga.displayMode)
-            putInt(Keys.defaultChapterSortByAscendingOrDescending, if (manga.sortDescending()) Manga.CHAPTER_SORT_DESC else Manga.CHAPTER_SORT_ASC)
+            putInt(Keys.defaultChapterSortByAscendingOrDescending, if (manga.sortDescending()) DomainManga.CHAPTER_SORT_DESC.toInt() else DomainManga.CHAPTER_SORT_ASC.toInt())
         }
     }
 }

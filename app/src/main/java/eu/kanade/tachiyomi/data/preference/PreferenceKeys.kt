@@ -59,6 +59,8 @@ object PreferenceKeys {
 
     const val dohProvider = "doh_provider"
 
+    const val defaultUserAgent = "default_user_agent"
+
     const val defaultChapterFilterByRead = "default_chapter_filter_by_read"
 
     const val defaultChapterFilterByDownloaded = "default_chapter_filter_by_downloaded"
@@ -75,9 +77,9 @@ object PreferenceKeys {
 
     const val autoClearChapterCache = "auto_clear_chapter_cache"
 
-    fun trackUsername(syncId: Int) = "pref_mangasync_username_$syncId"
+    fun trackUsername(syncId: Long) = "pref_mangasync_username_$syncId"
 
-    fun trackPassword(syncId: Int) = "pref_mangasync_password_$syncId"
+    fun trackPassword(syncId: Long) = "pref_mangasync_password_$syncId"
 
-    fun trackToken(syncId: Int) = "track_token_$syncId"
+    fun trackToken(syncId: Long) = "track_token_$syncId"
 }

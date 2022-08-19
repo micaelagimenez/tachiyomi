@@ -289,7 +289,6 @@
     <string name="update_check_notification_download_complete">Toca pro installare</string>
     <string name="update_check_notification_download_error">Errore de iscarrigamentu</string>
     <string name="update_check_notification_update_available">Versione noa a disponimentu!</string>
-    <string name="description_cover">Cobertedda de su manga</string>
     <string name="information_no_downloads">Perunu iscarrigamentu</string>
     <string name="information_no_recent">Perunu agiornamentu reghente</string>
     <string name="information_no_recent_manga">Nudda de lèghidu dae pagu</string>
@@ -737,4 +736,18 @@
     <string name="on_hold_list">Lista de postos in pàusa</string>
     <string name="unfinished_list">Lista de no acabados</string>
     <string name="cant_open_last_read_chapter">No at fatu a abèrrere s\'ùrtimu capìtulu lèghidu</string>
+    <string name="custom_cover">Cobertedda personalizada</string>
+    <string name="not_installed">No installada</string>
+    <string name="pref_app_language">Limba de s\'aplicatzione</string>
+    <string name="description_placeholder">Peruna descritzione</string>
+    <string name="theme_lavender">Archemissa</string>
+    <string name="delete_category_confirmation">Boles iscantzellare sa categoria \"%s\"\?</string>
+    <string name="internal_error">Errore internu: verìfica sos registros de sas serradas improvisas pro àteras informatziones</string>
+    <string name="delete_category">Iscantzella sa categoria</string>
+    <string name="pref_user_agent_string">Istringa de agente de utente predefinida</string>
+    <string name="pref_reset_user_agent_string">Reseta s\'istringa de agente de utente predefinida</string>
+    <string name="action_remove_everything">Boga totu</string>
+    <string name="loader_rar5_error">Su formadu RARv5 no est suportadu</string>
+    <string name="appwidget_unavailable_locked">Su widget no est a disponimentu cando su blocu de s\'aplicatzione est abilitadu</string>
+    <string name="appwidget_updates_description">Pòmpia sos manga tuos agiornados dae pagu</string>
 </resources>

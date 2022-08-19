@@ -17,7 +17,7 @@ fun EmptyScreen(
     actions: List<EmptyView.Action>? = null,
 ) {
     EmptyScreen(
-        message = stringResource(id = textResource),
+        message = stringResource(textResource),
         actions = actions,
     )
 }
@@ -38,12 +38,11 @@ fun EmptyScreen(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                     )
+                    show(message, actions)
                 }
             },
             modifier = Modifier
                 .align(Alignment.Center),
-        ) { view ->
-            view.show(message, actions)
-        }
+        )
     }
 }

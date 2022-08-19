@@ -86,7 +86,7 @@
     <string name="pref_custom_color_filter">Filtre de couleur personnalisé</string>
     <string name="pref_keep_screen_on">Garder l\'écran allumé</string>
     <string name="pref_reader_navigation">Navigation</string>
-    <string name="pref_read_with_volume_keys">Boutons de volume</string>
+    <string name="pref_read_with_volume_keys">Avec les boutons de volume</string>
     <string name="pref_reader_theme">Couleur de fond</string>
     <string name="white_background">Blanc</string>
     <string name="black_background">Noir</string>
@@ -220,7 +220,6 @@
     <string name="update_check_notification_download_error">Erreur lors du téléchargement</string>
     <string name="update_check_notification_update_available">Mise à jour disponible !</string>
     <!--Content Description-->
-    <string name="description_cover">Couverture du manga</string>
     <!-- Information Text -->
     <string name="information_no_downloads">Aucun téléchargement en cours</string>
     <string name="information_no_recent">Pas de mises à jour récentes</string>
@@ -500,7 +499,7 @@
     <string name="page_list_empty_error">Aucune page trouvée</string>
     <string name="action_disable_all">Tout désactiver</string>
     <string name="action_enable_all">Tout activer</string>
-    <string name="pref_show_reading_mode_summary">Afficher la liste des modes de lecture lorsque le lecteur est ouvert</string>
+    <string name="pref_show_reading_mode_summary">Affiche la liste des modes de lecture à l\'ouverture du lecteur</string>
     <string name="pref_show_reading_mode">Afficher le mode de lecture</string>
     <string name="action_start">Commencer</string>
     <string name="loader_not_implemented_error">Source non trouvée</string>
@@ -536,7 +535,7 @@
     <string name="download_notifier_download_finish">Téléchargement terminé</string>
     <string name="channel_errors">Erreurs</string>
     <string name="backup_restore_missing_trackers">Traceurs non connectés :</string>
-    <string name="pref_remove_bookmarked_chapters">Permettre la suppression des chapitres marqués d\'un maque-page</string>
+    <string name="pref_remove_bookmarked_chapters">Permettre la suppression des chapitres marqués d\'un marque-page</string>
     <string name="pref_category_delete_chapters">Supprimer des chapitres</string>
     <string name="ext_nsfw_warning">Les sources de cette extension peuvent contenir du contenu NSFW (18+)</string>
     <string name="ext_nsfw_short">18+</string>
@@ -554,7 +553,7 @@
     <string name="downloaded_chapters">Chapitres téléchargés</string>
     <string name="manga_from_library">Manga de la bibliothèque</string>
     <string name="action_search_settings">Rechercher des paramètres</string>
-    <string name="pref_incognito_mode_summary">Met en pause l\'historique de lecture</string>
+    <string name="pref_incognito_mode_summary">Suspend l\'historique de lecture</string>
     <string name="clear_history_confirmation">Êtes-vous sûr(e) \? Tout l\'historique sera effacé.</string>
     <string name="pref_incognito_mode">Mode navigation privée</string>
     <string name="pref_clear_history">Effacer l\'historique</string>
@@ -591,11 +590,11 @@
 \n
 \nVous devrez installer les extensions manquantes et vous connecter ensuite aux services de suivi pour les utiliser.</string>
     <string name="nav_zone_prev">Précédent</string>
-    <string name="pref_dns_over_https">DNS via HTTPS (DoH)</string>
+    <string name="pref_dns_over_https">DNS over HTTPS (DoH)</string>
     <string name="nav_zone_right">Droite</string>
     <string name="nav_zone_left">Gauche</string>
     <string name="nav_zone_next">Suivant</string>
-    <string name="pref_show_navigation_mode_summary">Afficher brièvement lorsque le lecteur est ouvert</string>
+    <string name="pref_show_navigation_mode_summary">Affichage bref à l\'ouverture du lecteur</string>
     <string name="pref_show_navigation_mode">Afficher les zones tactiles (superposition)</string>
     <string name="exclude">Exclure : %s</string>
     <string name="include">Inclure : %s</string>
@@ -686,7 +685,7 @@
     <string name="pref_remove_exclude_categories">Catégories exclues</string>
     <string name="ext_app_info">Infos sur l\'application</string>
     <string name="ext_installer_shizuku_unavailable_dialog">Installez et démarrez Shizuku pour utiliser Shizuku comme installateur d\'extensions.</string>
-    <string name="ext_installer_shizuku_stopped">Shizuku n\'est pas en exécution</string>
+    <string name="ext_installer_shizuku_stopped">Shizuku n\'est pas en cours d\'exécution</string>
     <string name="ext_installer_legacy">Legacy</string>
     <string name="ext_installer_pref">Installateur</string>
     <string name="ext_install_service_notif">Installation de l\'extension…</string>
@@ -699,7 +698,7 @@
     <string name="backup_info">Les sauvegardes automatiques sont fortement conseillées. Nous vous recommandons aussi de conserver des copies ailleurs.</string>
     <string name="connected_to_wifi">Uniquement en Wi-Fi</string>
     <string name="update_72hour">Tous les 3 jours</string>
-    <string name="download_queue_size_warning">Avertissement : les téléchargements massifs peuvent entraîner un ralentissement des sources ou le blocage de Tachiyomi. Appuyez pour en savoir plus.</string>
+    <string name="download_queue_size_warning">Attention : les téléchargements massifs peuvent entraîner un ralentissement des sources ou le blocage de Tachiyomi. Appuyez pour en savoir plus.</string>
     <string name="pref_library_update_show_tab_badge">Afficher le nombre de messages non lus sur l\'icône des mises à jour</string>
     <string name="ext_update_all">Tout mettre à jour</string>
     <string name="channel_app_updates">Mises à jour de l\'application</string>
@@ -771,4 +770,18 @@
     <string name="complete_list">Liste des lectures terminées</string>
     <string name="network_not_metered">Uniquement sur réseau illimité</string>
     <string name="cant_open_last_read_chapter">Impossible d\'ouvrir le dernier chapitre lu</string>
+    <string name="custom_cover">Couverture personnalisée</string>
+    <string name="not_installed">Non installé</string>
+    <string name="pref_app_language">Pas installé</string>
+    <string name="description_placeholder">Aucune description</string>
+    <string name="theme_lavender">Lavande</string>
+    <string name="delete_category">Effacer catégorie</string>
+    <string name="delete_category_confirmation">Souhaitez-vous supprimer la catégorie « %s » \?</string>
+    <string name="internal_error">ErreurInterne : Vérifiez votre journal de plante pour plus d\'information</string>
+    <string name="pref_reset_user_agent_string">Réinitialiser le numéro d\'utilisateur par défaut</string>
+    <string name="pref_user_agent_string">Numéro d\'utilisateur par défaut</string>
+    <string name="action_remove_everything">Tout retirer</string>
+    <string name="loader_rar5_error">Le format RARv5 n\'est pas supporté</string>
+    <string name="appwidget_updates_description">Voir vos derniers mangas mis à jour</string>
+    <string name="appwidget_unavailable_locked">Le Widget n\'est pas disponible lorsque l\'application est verrouillée</string>
 </resources>
